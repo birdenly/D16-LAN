@@ -9,10 +9,12 @@ A project to get DOOM (2016) Multiplayer working offline and over LAN. Currently
 
 Working version: download_depot 379720 379721 7402417666934369131
 
+If you want to give a thanks: https://ko-fi.com/birden. No perks or help will be given to this, Ko-fi is actually for different non-AI projets i do.
+
 ## Getting started
 
-1. Download the release files.
-2. Place the files next to your game executable (`DOOM\DOOMx64.exe` and `DOOMx64vk.exe`).
+1. Download the release files from [HERE](https://github.com/birdenly/D16-LAN/releases) 
+2. Place the files next to your game executable (`DOOMx64.exe` and `DOOMx64vk.exe`).
 3. Run `patch_game.exe`. This patches both the OpenGL (`DOOMx64.exe`) and Vulkan (`DOOMx64vk.exe`) executables to work offline/locally and creates `.bak` backups of your original files.
 4. Run `Start_game.bat` to launch the game. Alternatively, you can add these launch options in Steam:
 
