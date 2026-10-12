@@ -3,9 +3,6 @@ import shutil
 import struct
 import sys
 
-# Target directory - either current directory or DOOM install folder
-DEFAULT_GAME_DIR = r"D:\Jogos\steam\steamapps\common\DOOM"
-
 TARGETS = [
     {
         "exe_name": "DOOMx64.exe",
@@ -73,6 +70,41 @@ TARGETS = [
                 "original": bytes.fromhex("77 26"),
                 "patched":  bytes.fromhex("eb 26"),
                 "description": "Bypasses SetState(0xC / State_Find_Dedicated_Instance) in idSessionLocal::StartMatch when starting a Private Match, jumping directly to StartLoading() as local listen server and preventing '#str_dlg_no_dedicated_servers_found' (dialog 0x58)."
+            },
+            {
+                "name": "giveXP CVar Default True (Enable XP Gain & Level-Up)",
+                "offset": 0x167B0F,
+                "original": bytes.fromhex("4c 8d 05 52 8d e9 01"),
+                "patched":  bytes.fromhex("4c 8d 05 1e 25 ea 01"),
+                "description": "Changes the default value of Title Storage CVar 'giveXP' from '0' to '1', enabling the HUD XP bar, XP callouts, and level-up calculation in offline/LAN mode."
+            },
+            {
+                "name": "metrics_allowStatsAndXPInPrivateMatch Default True (Enable Private Match XP)",
+                "offset": 0x130DCF,
+                "original": bytes.fromhex("4c 8d 05 92 fa ec 01"),
+                "patched":  bytes.fromhex("4c 8d 05 5e 92 ed 01"),
+                "description": "Changes the default value of 'metrics_allowStatsAndXPInPrivateMatch' from '0' to '1', allowing XP, stats, medals, and challenges to be earned and saved to profile.bin in Private Matches."
+            },
+            {
+                "name": "hud_showXPGainsInPrivateMatch Default True (Show +XP Popups in Private Match)",
+                "offset": 0x13015F,
+                "original": bytes.fromhex("4c 8d 05 02 07 ed 01"),
+                "patched":  bytes.fromhex("4c 8d 05 ce 9e ed 01"),
+                "description": "Changes the default value of 'hud_showXPGainsInPrivateMatch' from '0' to '1', showing +XP popups on the HUD during Private Matches."
+            },
+            {
+                "name": "UpdateMatchResults Private Match Post-Match XP Summary Enable",
+                "offset": 0x3BE116,
+                "original": bytes.fromhex("0f 85 14 03 00 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90 90"),
+                "description": "Allows idGameLocal::UpdateMatchResults to populate the Post-Match XP Summary (previousXP, currentXP, levelsGainedInMatch, matchXP) at the end of Private Matches."
+            },
+            {
+                "name": "allowTaunts CVar Default True (Enable In-Game Taunts)",
+                "offset": 0x167A9F,
+                "original": bytes.fromhex("4c 8d 05 c2 8d e9 01"),
+                "patched":  bytes.fromhex("4c 8d 05 8e 25 ea 01"),
+                "description": "Changes the default value of Title Storage CVar 'allowTaunts' from '0' to '1', enabling in-game taunts in offline/LAN mode."
             }
         ]
     },
@@ -142,6 +174,41 @@ TARGETS = [
                 "original": bytes.fromhex("77 26"),
                 "patched":  bytes.fromhex("eb 26"),
                 "description": "Bypasses SetState(0xC / State_Find_Dedicated_Instance) in idSessionLocal::StartMatch when starting a Private Match, jumping directly to StartLoading() as local listen server and preventing '#str_dlg_no_dedicated_servers_found' (dialog 0x58)."
+            },
+            {
+                "name": "giveXP CVar Default True (Enable XP Gain & Level-Up)",
+                "offset": 0x167B0F,
+                "original": bytes.fromhex("4c 8d 05 7a ef e7 01"),
+                "patched":  bytes.fromhex("4c 8d 05 4e 87 e8 01"),
+                "description": "Changes the default value of Title Storage CVar 'giveXP' from '0' to '1', enabling the HUD XP bar, XP callouts, and level-up calculation in offline/LAN mode."
+            },
+            {
+                "name": "metrics_allowStatsAndXPInPrivateMatch Default True (Enable Private Match XP)",
+                "offset": 0x130DCF,
+                "original": bytes.fromhex("4c 8d 05 ba 5c eb 01"),
+                "patched":  bytes.fromhex("4c 8d 05 8e f4 eb 01"),
+                "description": "Changes the default value of 'metrics_allowStatsAndXPInPrivateMatch' from '0' to '1', allowing XP, stats, medals, and challenges to be earned and saved to profile.bin in Private Matches."
+            },
+            {
+                "name": "hud_showXPGainsInPrivateMatch Default True (Show +XP Popups in Private Match)",
+                "offset": 0x13015F,
+                "original": bytes.fromhex("4c 8d 05 2a 69 eb 01"),
+                "patched":  bytes.fromhex("4c 8d 05 fe 00 ec 01"),
+                "description": "Changes the default value of 'hud_showXPGainsInPrivateMatch' from '0' to '1', showing +XP popups on the HUD during Private Matches."
+            },
+            {
+                "name": "UpdateMatchResults Private Match Post-Match XP Summary Enable",
+                "offset": 0x3BE7B6,
+                "original": bytes.fromhex("0f 85 14 03 00 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90 90"),
+                "description": "Allows idGameLocal::UpdateMatchResults to populate the Post-Match XP Summary (previousXP, currentXP, levelsGainedInMatch, matchXP) at the end of Private Matches."
+            },
+            {
+                "name": "allowTaunts CVar Default True (Enable In-Game Taunts)",
+                "offset": 0x167A9F,
+                "original": bytes.fromhex("4c 8d 05 ea ef e7 01"),
+                "patched":  bytes.fromhex("4c 8d 05 be 87 e8 01"),
+                "description": "Changes the default value of Title Storage CVar 'allowTaunts' from '0' to '1', enabling in-game taunts in offline/LAN mode."
             }
         ]
     }
@@ -151,8 +218,6 @@ def find_game_dir():
     # If files exist in current directory, use it
     if os.path.exists("DOOMx64.exe"):
         return os.getcwd()
-    if os.path.exists(DEFAULT_GAME_DIR):
-        return DEFAULT_GAME_DIR
     return os.getcwd()
 
 def backup_file(filepath):
@@ -206,7 +271,7 @@ def restore_executable(game_dir, target_info):
     return True
 
 def main():
-    game_dir = find_game_dir()
+    game_dir = os.getcwd()
     print(f"[*] Game Directory: {game_dir}")
 
     is_restore = len(sys.argv) > 1 and sys.argv[1] == "--restore"
