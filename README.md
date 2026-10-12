@@ -5,7 +5,9 @@ This is Slop.
 > DOOM (2016) LAN is a fan project. It is not affiliated with or endorsed by id Software or Bethesda Softworks.
 > This was tested and made for a Steam copy.
 
-A project to get DOOM (2016) Multiplayer working offline and over LAN. Currently, the game gets stuck in a loop when launched offline:
+A project to get DOOM (2016) Multiplayer working offline and over LAN. Currently, the game gets stuck in a loop when launched offline.
+
+Working version: download_depot 379720 379721 7402417666934369131
 
 ## Getting started
 
