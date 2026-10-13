@@ -9,7 +9,7 @@ A project to get DOOM (2016) Multiplayer working offline and over LAN. Currently
 
 Working version: download_depot 379720 379721 7402417666934369131
 
-If you want to give a thanks: https://ko-fi.com/birden. No perks or help will be given to this, Ko-fi is actually for different non-AI projets i do.
+If you want to give a thanks: https://ko-fi.com/birden. No perks or help will be given to this, Ko-fi is actually for different non-AI projects i do.
 
 ## Getting started
 
