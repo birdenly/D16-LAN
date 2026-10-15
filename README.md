@@ -1,7 +1,5 @@
 # DOOM (2016) LAN
 
-This is Slop.
-
 > DOOM (2016) LAN is a fan project. It is not affiliated with or endorsed by id Software or Bethesda Softworks.
 > This was tested and made for a Steam copy.
 
