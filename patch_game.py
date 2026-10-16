@@ -182,6 +182,62 @@ TARGETS = [
                 "original": bytes.fromhex("48 89 5c 24 10"),
                 "patched":  bytes.fromhex("c3 90 90 90 90"),
                 "description": "Prevents idSnapBrowserHelper::OnMapDownloadError from popping up dialog 0xA1 ('Failed to sign into DOOM Services')."
+            },
+            {
+                "name": "SnapmapHub DOOM ID Prompt Silence (Suppress Dialog 0x73)",
+                "offset": 0x1081EE0,
+                "original": bytes.fromhex("40 53 48 81 ec"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapHub::ShowScreen from prompting to create a DOOM ID / Bethesda account (dialog 0x73)."
+            },
+            {
+                "name": "SnapBrowserHelper HandleNoResults Silence (Suppress Dialog 0x48E)",
+                "offset": 0xFCF250,
+                "original": bytes.fromhex("48 89 74 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::HandleNoResults from displaying the modal popup 'NOTICE: No results were found.' (dialog 0x48E)."
+            },
+            {
+                "name": "idLocalUser IsOnline Force True (Master Online Status)",
+                "offset": 0x181C920,
+                "original": bytes.fromhex("48 83 ec 28 48 8b 89 60 01 00 00"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
+                "description": "Forces idLocalUser::IsOnline() to return 1 (true) unconditionally across all 70+ callers in the engine, enabling full online access to SnapMap menus, browsers, downloaded maps, and multiplayer features."
+            },
+            {
+                "name": "idHydraManager IsConnected Force True (Hydra Status Bypass)",
+                "offset": 0x18AED00,
+                "original": bytes.fromhex("83 b9 e0 01 00 00 01 0f 94 c0 c3"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
+                "description": "Forces idHydraManager::IsConnected() to return 1 (true), reporting an active cloud service connection to all query managers."
+            },
+            {
+                "name": "idLocalUser SignInStatus Force OK (Authenticated State 0x16)",
+                "offset": 0x181DB60,
+                "original": bytes.fromhex("48 8b c4 55 41 54"),
+                "patched":  bytes.fromhex("b8 16 00 00 00 c3"),
+                "description": "Forces idLocalUser::SignInStatus() to return 0x16 (OK / Online / Authenticated), satisfying all login and sign-in status checks in LaunchSnapmaps and SnapmapHub."
+            },
+            {
+                "name": "SnapmapHub GoOnline Action Instant Online (Bypass Network Auth)",
+                "offset": 0x10816F0,
+                "original": bytes.fromhex("40 53 48 83 ec 20 33 c0 48 8b d9 48"),
+                "patched":  bytes.fromhex("c6 81 50 03 00 00 01 e9 54 11 00 00"),
+                "description": "When clicking 'Go Online', immediately sets internal m_isOnline flag to 1 and triggers an instant Hub UI refresh without attempting network authentication."
+            },
+            {
+                "name": "SnapmapMapInfo SetLoading Silence (Disable Map Info Loading Spinner)",
+                "offset": 0x109139C,
+                "original": bytes.fromhex("b2 01"),
+                "patched":  bytes.fromhex("31 d2"),
+                "description": "Disables the infinite red stopwatch 'Loading...' spinner in idMenuScreen_Shell_SnapmapMapInfo::ShowScreen by passing bLoading=false to SetLoading, preventing the screen from getting stuck in an infinite loading state."
+            },
+            {
+                "name": "SnapmapMapInfo QueryMapDetails Instant Complete (Bypass Cloud Query & Populate Buttons)",
+                "offset": 0x1090870,
+                "original": bytes.fromhex("48 8b c4 56 57"),
+                "patched":  bytes.fromhex("e9 1b 05 00 00"),
+                "description": "Bypasses the asynchronous cloud query to unreachable Bethesda Hydra services in idMenuScreen_Shell_SnapmapMapInfo::QueryMapDetails, jumping immediately to OnSuccessCallback to set m_isMapLoaded = 1 and call PopulateButtons & PopulateUI, instantly displaying PLAY, EDIT, and other action buttons."
             }
         ]
     },
@@ -363,6 +419,62 @@ TARGETS = [
                 "original": bytes.fromhex("48 89 5c 24 10"),
                 "patched":  bytes.fromhex("c3 90 90 90 90"),
                 "description": "Prevents idSnapBrowserHelper::OnMapDownloadError from popping up dialog 0xA1 ('Failed to sign into DOOM Services')."
+            },
+            {
+                "name": "SnapmapHub DOOM ID Prompt Silence (Suppress Dialog 0x73)",
+                "offset": 0x1082A70,
+                "original": bytes.fromhex("40 53 48 81 ec"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapHub::ShowScreen from prompting to create a DOOM ID / Bethesda account (dialog 0x73)."
+            },
+            {
+                "name": "SnapBrowserHelper HandleNoResults Silence (Suppress Dialog 0x48E)",
+                "offset": 0xFCFD60,
+                "original": bytes.fromhex("48 89 74 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::HandleNoResults from displaying the modal popup 'NOTICE: No results were found.' (dialog 0x48E)."
+            },
+            {
+                "name": "idLocalUser IsOnline Force True (Master Online Status)",
+                "offset": 0x181BB50,
+                "original": bytes.fromhex("48 83 ec 28 48 8b 89 60 01 00 00"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
+                "description": "Forces idLocalUser::IsOnline() to return 1 (true) unconditionally across all 70+ callers in the engine, enabling full online access to SnapMap menus, browsers, downloaded maps, and multiplayer features."
+            },
+            {
+                "name": "idHydraManager IsConnected Force True (Hydra Status Bypass)",
+                "offset": 0x18B8A30,
+                "original": bytes.fromhex("83 b9 e0 01 00 00 01 0f 94 c0 c3"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
+                "description": "Forces idHydraManager::IsConnected() to return 1 (true), reporting an active cloud service connection to all query managers."
+            },
+            {
+                "name": "idLocalUser SignInStatus Force OK (Authenticated State 0x16)",
+                "offset": 0x181CB80,
+                "original": bytes.fromhex("48 8b c4 55 41 54"),
+                "patched":  bytes.fromhex("b8 16 00 00 00 c3"),
+                "description": "Forces idLocalUser::SignInStatus() to return 0x16 (OK / Online / Authenticated), satisfying all login and sign-in status checks in LaunchSnapmaps and SnapmapHub."
+            },
+            {
+                "name": "SnapmapHub GoOnline Action Instant Online (Bypass Network Auth)",
+                "offset": 0x1082280,
+                "original": bytes.fromhex("40 53 48 83 ec 20 33 c0 48 8b d9 48"),
+                "patched":  bytes.fromhex("c6 81 50 03 00 00 01 e9 a4 14 00 00"),
+                "description": "When clicking 'Go Online', immediately sets internal m_isOnline flag to 1 and triggers an instant Hub UI refresh without attempting network authentication."
+            },
+            {
+                "name": "SnapmapMapInfo SetLoading Silence (Disable Map Info Loading Spinner)",
+                "offset": 0x109228C,
+                "original": bytes.fromhex("b2 01"),
+                "patched":  bytes.fromhex("31 d2"),
+                "description": "Disables the infinite red stopwatch 'Loading...' spinner in idMenuScreen_Shell_SnapmapMapInfo::ShowScreen by passing bLoading=false to SetLoading, preventing the screen from getting stuck in an infinite loading state."
+            },
+            {
+                "name": "SnapmapMapInfo QueryMapDetails Instant Complete (Bypass Cloud Query & Populate Buttons)",
+                "offset": 0x1091760,
+                "original": bytes.fromhex("48 8b c4 56 57"),
+                "patched":  bytes.fromhex("e9 1b 05 00 00"),
+                "description": "Bypasses the asynchronous cloud query to unreachable Bethesda Hydra services in idMenuScreen_Shell_SnapmapMapInfo::QueryMapDetails, jumping immediately to OnSuccessCallback to set m_isMapLoaded = 1 and call PopulateButtons & PopulateUI, instantly displaying PLAY, EDIT, and other action buttons."
             }
         ]
     }
