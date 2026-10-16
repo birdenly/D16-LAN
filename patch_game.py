@@ -1,8 +1,8 @@
+import json
 import os
 import shutil
 import struct
 import sys
-import json
 
 TARGETS = [
     {
@@ -281,6 +281,27 @@ TARGETS = [
                 "original": bytes.fromhex("0f 84 c2 00 00 00"),
                 "patched":  bytes.fromhex("e9 c3 00 00 00 90"),
                 "description": "Forces RequestTabTiles to unconditionally take the offline path (0x1411bf664), instantly loading tab tiles from local snapmap_offline/broadcasts/ JSON files without querying dead Bethesda servers."
+            },
+            {
+                "name": "CheckLocalSavedMapIntegrity Bypass (Clear isDamaged & Force Clean Status)",
+                "offset": 0x15AB54D,
+                "original": bytes.fromhex("84 db 75 04 c6 47 40 01"),
+                "patched":  bytes.fromhex("e9 95 00 00 00 90 90 90"),
+                "description": "Bypasses the integrity and checksum failure branches in ReadGameDetailsAndVerify (leaving isDamaged = 0), allowing game.details to be fully parsed and preventing 'The save file appears to be damaged'."
+            },
+            {
+                "name": "idSaveGame CheckFileIntegrity HMAC Bypass (Accept All User Profiles & Map Signatures)",
+                "offset": 0x190D230,
+                "original": bytes.fromhex("40 55 56 57 41 54 41 55"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90"),
+                "description": "Bypasses the 'CYBERDEMON' HMAC signature check in idSaveGame, accepting savegames, profiles, and downloaded SnapMap files (.verify) regardless of which SteamID or user account originally created them."
+            },
+            {
+                "name": "GetLocalSavedMapEdit Bypass isDamaged Check (Allow Edit on All Maps)",
+                "offset": 0x11CA450,
+                "original": bytes.fromhex("0f 85 c3 01 00 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90 90"),
+                "description": "Disables the isDamaged conditional jump in idModelManager::GetLocalSavedMapEdit, allowing maps to be edited even if flagged damaged."
             }
         ]
     },
@@ -560,6 +581,27 @@ TARGETS = [
                 "original": bytes.fromhex("0f 84 c2 00 00 00"),
                 "patched":  bytes.fromhex("e9 c3 00 00 00 90"),
                 "description": "Forces RequestTabTiles to unconditionally take the offline path (0x1411c0294), instantly loading tab tiles from local snapmap_offline/broadcasts/ JSON files without querying dead Bethesda servers."
+            },
+            {
+                "name": "CheckLocalSavedMapIntegrity Bypass (Clear isDamaged & Force Clean Status)",
+                "offset": 0x15AA55D,
+                "original": bytes.fromhex("84 db 75 04 c6 47 40 01"),
+                "patched":  bytes.fromhex("e9 95 00 00 00 90 90 90"),
+                "description": "Bypasses the integrity and checksum failure branches in ReadGameDetailsAndVerify (leaving isDamaged = 0), allowing game.details to be fully parsed and preventing 'The save file appears to be damaged'."
+            },
+            {
+                "name": "idSaveGame CheckFileIntegrity HMAC Bypass (Accept All User Profiles & Map Signatures)",
+                "offset": 0x19186B0,
+                "original": bytes.fromhex("40 55 56 57 41 54 41 55"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90"),
+                "description": "Bypasses the 'CYBERDEMON' HMAC signature check in idSaveGame, accepting savegames, profiles, and downloaded SnapMap files (.verify) regardless of which SteamID or user account originally created them."
+            },
+            {
+                "name": "GetLocalSavedMapEdit Bypass isDamaged Check (Allow Edit on All Maps)",
+                "offset": 0x11CB080,
+                "original": bytes.fromhex("0f 85 c3 01 00 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90 90"),
+                "description": "Disables the isDamaged conditional jump in idModelManager::GetLocalSavedMapEdit, allowing maps to be edited even if flagged damaged."
             }
         ]
     }
