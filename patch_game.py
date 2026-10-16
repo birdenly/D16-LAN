@@ -105,6 +105,83 @@ TARGETS = [
                 "original": bytes.fromhex("4c 8d 05 c2 8d e9 01"),
                 "patched":  bytes.fromhex("4c 8d 05 8e 25 ea 01"),
                 "description": "Changes the default value of Title Storage CVar 'allowTaunts' from '0' to '1', enabling in-game taunts in offline/LAN mode."
+            },
+            {
+                "name": "LaunchSnapmaps Skip Offline Error (Fix SnapMap Notice Dialog)",
+                "offset": 0xF9FA38,
+                "original": bytes.fromhex("0f 84 a3 00 00 00"),
+                "patched":  bytes.fromhex("e9 a4 00 00 00 90"),
+                "description": "Bypasses the Hydra signed-in check in idMenuManager_Shell::LaunchSnapmaps when IsTitleStorageReady() is true, jumping directly to ShowScreen(snapmaps-hub) and preventing 'There was an error connecting to Doom Online Services'."
+            },
+            {
+                "name": "SnapmapHub OnError Silence (Suppress Hub Background Query Notice)",
+                "offset": 0x1080770,
+                "original": bytes.fromhex("48 89 5c 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapHub::OnError from popping up dialog 0x6c when online featured tiles cannot be fetched."
+            },
+            {
+                "name": "SnapBrowserHelper OnError Silence (Suppress Browser Query Notice)",
+                "offset": 0xFD0020,
+                "original": bytes.fromhex("48 89 5c 24 10"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::OnError from popping up dialog 0x6c when browsing offline maps."
+            },
+            {
+                "name": "SnapmapMapInfo Play Bypass Solo (Route Play to SnapMap Lobby)",
+                "offset": 0x1129CBE,
+                "original": bytes.fromhex("74 1d"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Bypasses the IsHydraSignedIn() branch in SnapmapMapInfo, routing map play actions to LaunchSnapMapLobbyForPublishedMap (Multiplayer Co-op Lobby) instead of LaunchPublishedSnapMapForOfflinePlay (solo offline play)."
+            },
+            {
+                "name": "SnapBrowserHelper Play Bypass Solo (Route Browser Play to SnapMap Lobby)",
+                "offset": 0xFD09A5,
+                "original": bytes.fromhex("74 1c"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Bypasses the IsHydraSignedIn() branch in SnapBrowserHelper::OnLoadForPlayCallback, routing map load actions to LaunchSnapMapLobbyForPublishedMap instead of solo offline play."
+            },
+            {
+                "name": "LaunchSnapMapLobby Force P2P Hosting 1 (Skip Cloud Search Parms)",
+                "offset": 0xF9F6B8,
+                "original": bytes.fromhex("75 16"),
+                "patched":  bytes.fromhex("eb 16"),
+                "description": "Bypasses matchmaking search parameters setup in LaunchSnapMapLobbyForPublishedMap."
+            },
+            {
+                "name": "LaunchSnapMapLobby Force P2P Hosting 2 (Create Local Matchmaking Lobby)",
+                "offset": 0xF9F7D8,
+                "original": bytes.fromhex("75 1e"),
+                "patched":  bytes.fromhex("eb 1e"),
+                "description": "Unconditionally routes LaunchSnapMapLobbyForPublishedMap to session->CreateMatchmakingLobby (snap.host.published), creating an immediate local P2P hosting lobby instead of searching cloud matchmaking."
+            },
+            {
+                "name": "SnapmapLobby MinPlayers Bypass (Allow Solo / Any Player Count to Start)",
+                "offset": 0x108D2D0,
+                "original": bytes.fromhex("75 57"),
+                "patched":  bytes.fromhex("eb 57"),
+                "description": "Bypasses the minimum player requirement check in idMenuScreen_Shell_SnapmapLobby::TryToStartMatch, allowing the host to start the SnapMap co-op match with any number of players."
+            },
+            {
+                "name": "SnapmapHub IsOnline Force True (Enable Full Online Layout & Tabs)",
+                "offset": 0x107D7A0,
+                "original": bytes.fromhex("40 53 48 83 ec 20"),
+                "patched":  bytes.fromhex("b8 01 00 00 00 c3"),
+                "description": "Forces idMenuScreen_Shell_SnapmapHub::IsOnline to return 1 (true). Enables full SnapMap online layout (MY MAPS, BROWSE, CREATE), removes the offline 'GO ONLINE' banner tile, and allows multiplayer lobbies."
+            },
+            {
+                "name": "SnapmapMapInfo OnError Silence (Suppress Dialog 0xA1)",
+                "offset": 0x1129900,
+                "original": bytes.fromhex("48 89 5c 24 20"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapMapInfo::OnError from popping up dialog 0xA1 ('Failed to sign into DOOM Services')."
+            },
+            {
+                "name": "SnapBrowserHelper OnDownloadError Silence (Suppress Dialog 0xA1)",
+                "offset": 0xFCF720,
+                "original": bytes.fromhex("48 89 5c 24 10"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::OnMapDownloadError from popping up dialog 0xA1 ('Failed to sign into DOOM Services')."
             }
         ]
     },
@@ -209,6 +286,83 @@ TARGETS = [
                 "original": bytes.fromhex("4c 8d 05 ea ef e7 01"),
                 "patched":  bytes.fromhex("4c 8d 05 be 87 e8 01"),
                 "description": "Changes the default value of Title Storage CVar 'allowTaunts' from '0' to '1', enabling in-game taunts in offline/LAN mode."
+            },
+            {
+                "name": "LaunchSnapmaps Skip Offline Error (Fix SnapMap Notice Dialog)",
+                "offset": 0xFA0508,
+                "original": bytes.fromhex("0f 84 a3 00 00 00"),
+                "patched":  bytes.fromhex("e9 a4 00 00 00 90"),
+                "description": "Bypasses the Hydra signed-in check in idMenuManager_Shell::LaunchSnapmaps when IsTitleStorageReady() is true, jumping directly to ShowScreen(snapmaps-hub) and preventing 'There was an error connecting to Doom Online Services'."
+            },
+            {
+                "name": "SnapmapHub OnError Silence (Suppress Hub Background Query Notice)",
+                "offset": 0x1081300,
+                "original": bytes.fromhex("48 89 5c 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapHub::OnError from popping up dialog 0x6c when online featured tiles cannot be fetched."
+            },
+            {
+                "name": "SnapBrowserHelper OnError Silence (Suppress Browser Query Notice)",
+                "offset": 0xFD0B30,
+                "original": bytes.fromhex("48 89 5c 24 10"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::OnError from popping up dialog 0x6c when browsing offline maps."
+            },
+            {
+                "name": "SnapmapMapInfo Play Bypass Solo (Route Play to SnapMap Lobby)",
+                "offset": 0x112AB0E,
+                "original": bytes.fromhex("74 1d"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Bypasses the IsHydraSignedIn() branch in SnapmapMapInfo, routing map play actions to LaunchSnapMapLobbyForPublishedMap (Multiplayer Co-op Lobby) instead of LaunchPublishedSnapMapForOfflinePlay (solo offline play)."
+            },
+            {
+                "name": "SnapBrowserHelper Play Bypass Solo (Route Browser Play to SnapMap Lobby)",
+                "offset": 0xFD14B5,
+                "original": bytes.fromhex("74 1c"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Bypasses the IsHydraSignedIn() branch in SnapBrowserHelper::OnLoadForPlayCallback, routing map load actions to LaunchSnapMapLobbyForPublishedMap instead of solo offline play."
+            },
+            {
+                "name": "LaunchSnapMapLobby Force P2P Hosting 1 (Skip Cloud Search Parms)",
+                "offset": 0xFA0188,
+                "original": bytes.fromhex("75 16"),
+                "patched":  bytes.fromhex("eb 16"),
+                "description": "Bypasses matchmaking search parameters setup in LaunchSnapMapLobbyForPublishedMap."
+            },
+            {
+                "name": "LaunchSnapMapLobby Force P2P Hosting 2 (Create Local Matchmaking Lobby)",
+                "offset": 0xFA02A8,
+                "original": bytes.fromhex("75 1e"),
+                "patched":  bytes.fromhex("eb 1e"),
+                "description": "Unconditionally routes LaunchSnapMapLobbyForPublishedMap to session->CreateMatchmakingLobby (snap.host.published), creating an immediate local P2P hosting lobby instead of searching cloud matchmaking."
+            },
+            {
+                "name": "SnapmapLobby MinPlayers Bypass (Allow Solo / Any Player Count to Start)",
+                "offset": 0x108E180,
+                "original": bytes.fromhex("75 57"),
+                "patched":  bytes.fromhex("eb 57"),
+                "description": "Bypasses the minimum player requirement check in idMenuScreen_Shell_SnapmapLobby::TryToStartMatch, allowing the host to start the SnapMap co-op match with any number of players."
+            },
+            {
+                "name": "SnapmapHub IsOnline Force True (Enable Full Online Layout & Tabs)",
+                "offset": 0x107E330,
+                "original": bytes.fromhex("40 53 48 83 ec 20"),
+                "patched":  bytes.fromhex("b8 01 00 00 00 c3"),
+                "description": "Forces idMenuScreen_Shell_SnapmapHub::IsOnline to return 1 (true). Enables full SnapMap online layout (MY MAPS, BROWSE, CREATE), removes the offline 'GO ONLINE' banner tile, and allows multiplayer lobbies."
+            },
+            {
+                "name": "SnapmapMapInfo OnError Silence (Suppress Dialog 0xA1)",
+                "offset": 0x112A750,
+                "original": bytes.fromhex("48 89 5c 24 20"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapMapInfo::OnError from popping up dialog 0xA1 ('Failed to sign into DOOM Services')."
+            },
+            {
+                "name": "SnapBrowserHelper OnDownloadError Silence (Suppress Dialog 0xA1)",
+                "offset": 0xFD0230,
+                "original": bytes.fromhex("48 89 5c 24 10"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::OnMapDownloadError from popping up dialog 0xA1 ('Failed to sign into DOOM Services')."
             }
         ]
     }
