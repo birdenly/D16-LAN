@@ -2,6 +2,7 @@ import os
 import shutil
 import struct
 import sys
+import json
 
 TARGETS = [
     {
@@ -238,6 +239,48 @@ TARGETS = [
                 "original": bytes.fromhex("48 8b c4 56 57"),
                 "patched":  bytes.fromhex("e9 1b 05 00 00"),
                 "description": "Bypasses the asynchronous cloud query to unreachable Bethesda Hydra services in idMenuScreen_Shell_SnapmapMapInfo::QueryMapDetails, jumping immediately to OnSuccessCallback to set m_isMapLoaded = 1 and call PopulateButtons & PopulateUI, instantly displaying PLAY, EDIT, and other action buttons."
+            },
+            {
+                "name": "SnapmapHub ShowModalDialog Silence (Instant Tab Response)",
+                "offset": 0x107D664,
+                "original": bytes.fromhex("e8 07 b6 f2 ff"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Silences the call to ShowModalDialog('#str_snap_server_request_wait') in idMenuScreen_Shell_SnapmapHub::SelectTab, preventing the screen from locking input or showing a waiting modal dialog while tabs are being populated."
+            },
+            {
+                "name": "SnapmapHub SetLoading Silence (Disable Hub Loading Spinner)",
+                "offset": 0x1083570,
+                "original": bytes.fromhex("48 89 6c 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Neutralizes idMenuScreen_Shell_SnapmapHub::SetLoading, immediately returning without playing 'rollOn' on the loading widget and preventing the infinite red stopwatch 'Loading...' spinner on the Hub screen."
+            },
+            {
+                "name": "SnapmapHub All Tabs Force Enabled & Clickable (Full Menu Interaction)",
+                "offset": 0x1083223,
+                "original": bytes.fromhex("41 b0 01"),
+                "patched":  bytes.fromhex("45 31 c0"),
+                "description": "Forces r8b = 0 in idMenuScreen_Shell_SnapmapHub::UpdateTabs, unconditionally clearing the disabled 0x10 bit on all menu tabs (FEATURED, PLAY, CREATE, ME, FIND MATCH) and top-bar icons (Search, Feed), making the entire menu fully interactive and clickable."
+            },
+            {
+                "name": "SnapmapHub ShowScreen Skip Featured Cloud Query (Bypass Dead Hydra Requests)",
+                "offset": 0x10824D7,
+                "original": bytes.fromhex("e8 44 2a 15 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Bypasses asynchronous background query to unreachable Bethesda Hydra endpoints for online featured tiles in idMenuScreen_Shell_SnapmapHub::ShowScreen."
+            },
+            {
+                "name": "SnapmapHub ShowScreen Skip Feed Cloud Query (Bypass Dead Hydra Requests)",
+                "offset": 0x10825A0,
+                "original": bytes.fromhex("e8 1b c8 13 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Bypasses asynchronous background query to unreachable Bethesda Hydra endpoints for feed items in idMenuScreen_Shell_SnapmapHub::ShowScreen."
+            },
+            {
+                "name": "RequestTabTiles Force Offline (Instant Local Tile Population)",
+                "offset": 0x11BEB9C,
+                "original": bytes.fromhex("0f 84 c2 00 00 00"),
+                "patched":  bytes.fromhex("e9 c3 00 00 00 90"),
+                "description": "Forces RequestTabTiles to unconditionally take the offline path (0x1411bf664), instantly loading tab tiles from local snapmap_offline/broadcasts/ JSON files without querying dead Bethesda servers."
             }
         ]
     },
@@ -475,6 +518,48 @@ TARGETS = [
                 "original": bytes.fromhex("48 8b c4 56 57"),
                 "patched":  bytes.fromhex("e9 1b 05 00 00"),
                 "description": "Bypasses the asynchronous cloud query to unreachable Bethesda Hydra services in idMenuScreen_Shell_SnapmapMapInfo::QueryMapDetails, jumping immediately to OnSuccessCallback to set m_isMapLoaded = 1 and call PopulateButtons & PopulateUI, instantly displaying PLAY, EDIT, and other action buttons."
+            },
+            {
+                "name": "SnapmapHub ShowModalDialog Silence (Instant Tab Response)",
+                "offset": 0x107E1F4,
+                "original": bytes.fromhex("e8 47 b5 f2 ff"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Silences the call to ShowModalDialog('#str_snap_server_request_wait') in idMenuScreen_Shell_SnapmapHub::SelectTab, preventing the screen from locking input or showing a waiting modal dialog while tabs are being populated."
+            },
+            {
+                "name": "SnapmapHub SetLoading Silence (Disable Hub Loading Spinner)",
+                "offset": 0x1084450,
+                "original": bytes.fromhex("48 89 6c 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Neutralizes idMenuScreen_Shell_SnapmapHub::SetLoading, immediately returning without playing 'rollOn' on the loading widget and preventing the infinite red stopwatch 'Loading...' spinner on the Hub screen."
+            },
+            {
+                "name": "SnapmapHub All Tabs Force Enabled & Clickable (Full Menu Interaction)",
+                "offset": 0x1084103,
+                "original": bytes.fromhex("41 b0 01"),
+                "patched":  bytes.fromhex("45 31 c0"),
+                "description": "Forces r8b = 0 in idMenuScreen_Shell_SnapmapHub::UpdateTabs, unconditionally clearing the disabled 0x10 bit on all menu tabs (FEATURED, PLAY, CREATE, ME, FIND MATCH) and top-bar icons (Search, Feed), making the entire menu fully interactive and clickable."
+            },
+            {
+                "name": "SnapmapHub ShowScreen Skip Featured Cloud Query (Bypass Dead Hydra Requests)",
+                "offset": 0x1083067,
+                "original": bytes.fromhex("e8 b4 2b 15 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Bypasses asynchronous background query to unreachable Bethesda Hydra endpoints for online featured tiles in idMenuScreen_Shell_SnapmapHub::ShowScreen."
+            },
+            {
+                "name": "SnapmapHub ShowScreen Skip Feed Cloud Query (Bypass Dead Hydra Requests)",
+                "offset": 0x1083130,
+                "original": bytes.fromhex("e8 bb c8 13 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Bypasses asynchronous background query to unreachable Bethesda Hydra endpoints for feed items in idMenuScreen_Shell_SnapmapHub::ShowScreen."
+            },
+            {
+                "name": "RequestTabTiles Force Offline (Instant Local Tile Population)",
+                "offset": 0x11BF7CC,
+                "original": bytes.fromhex("0f 84 c2 00 00 00"),
+                "patched":  bytes.fromhex("e9 c3 00 00 00 90"),
+                "description": "Forces RequestTabTiles to unconditionally take the offline path (0x1411c0294), instantly loading tab tiles from local snapmap_offline/broadcasts/ JSON files without querying dead Bethesda servers."
             }
         ]
     }
@@ -536,6 +621,46 @@ def restore_executable(game_dir, target_info):
     print(f"[+] Restored original {target_info['exe_name']} successfully!")
     return True
 
+def deploy_offline_broadcasts(game_dir):
+    broadcast_dir = os.path.join(game_dir, "base", "snapmap_offline", "broadcasts")
+    try:
+        os.makedirs(broadcast_dir, exist_ok=True)
+        files = {
+            "snapmaps-hub-play.json": [
+                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Browse and play your downloaded maps", "large": True, "ordinal": 0},
+                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Play your locally created maps", "large": True, "ordinal": 1},
+                {"type": "SNAP_HUB_SEARCH", "text": "SEARCH MAPS", "subText": "Search local map database", "large": False, "ordinal": 2}
+            ],
+            "snapmaps-hub-make.json": [
+                {"type": "SNAP_HUB_EDIT_NEW_MAP", "text": "CREATE NEW MAP", "subText": "Start building a new SnapMap", "large": True, "ordinal": 0},
+                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Continue editing your custom maps", "large": True, "ordinal": 1},
+                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "View and edit downloaded maps", "large": False, "ordinal": 2},
+                {"type": "SNAP_HUB_EDIT_TUTORIAL_MAPS", "text": "TUTORIALS", "subText": "Learn the basics of SnapMap creation", "large": False, "ordinal": 3}
+            ],
+            "snapmaps-hub-me.json": [
+                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Your downloaded community maps", "large": True, "ordinal": 0},
+                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Your published and local creations", "large": True, "ordinal": 1},
+                {"type": "SNAP_HUB_EDIT_NEW_MAP", "text": "CREATE NEW MAP", "subText": "Create a new custom map", "large": False, "ordinal": 2}
+            ],
+            "snapmaps-hub-feature.json": [
+                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Access your downloaded maps library", "large": True, "ordinal": 0},
+                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Browse your local creations", "large": True, "ordinal": 1}
+            ],
+            "snapmaps-hub-quick-play.json": [
+                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Quick play downloaded maps", "large": True, "ordinal": 0},
+                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Quick play your local maps", "large": False, "ordinal": 1}
+            ]
+        }
+        for fname, content in files.items():
+            fpath = os.path.join(broadcast_dir, fname)
+            with open(fpath, "w", encoding="utf-8") as f:
+                json.dump(content, f, indent=2)
+        print(f"[+] Deployed {len(files)} offline SnapMap broadcasts to {broadcast_dir}")
+        return True
+    except Exception as e:
+        print(f"[-] Failed to deploy offline broadcasts: {e}")
+        return False
+
 def main():
     game_dir = os.getcwd()
     print(f"[*] Game Directory: {game_dir}")
@@ -550,6 +675,9 @@ def main():
         else:
             if patch_executable(game_dir, target):
                 success_count += 1
+
+    if not is_restore:
+        deploy_offline_broadcasts(game_dir)
 
     action = "Restoration" if is_restore else "Patching"
     print(f"\n[SUMMARY] {action} complete! {success_count}/{len(TARGETS)} targets processed successfully.")
