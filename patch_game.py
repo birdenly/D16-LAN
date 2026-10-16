@@ -302,6 +302,27 @@ TARGETS = [
                 "original": bytes.fromhex("0f 85 c3 01 00 00"),
                 "patched":  bytes.fromhex("90 90 90 90 90 90"),
                 "description": "Disables the isDamaged conditional jump in idModelManager::GetLocalSavedMapEdit, allowing maps to be edited even if flagged damaged."
+            },
+            {
+                "name": "SnapMap PostMatch Profile Stats Skip (Fix 99% Hang On Map Exit)",
+                "offset": 0x1A741C9,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1d"),
+                "description": "Bypasses the end-of-match stats reporting routine in idProfileMgr::Pump when exiting a SnapMap. In offline/LAN mode, Bethesda Hydra stats endpoints do not exist, causing [rbx + 0x160] to be NULL and triggering an Access Violation (0xC0000005) inside idSharedPtr::operator= (0x1418AF782) that freezes map unload at 99%."
+            },
+            {
+                "name": "SnapMap PostMatch SaveGame Stats Skip (Fix SaveGame Map Exit Hang)",
+                "offset": 0x15AB48E,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1c"),
+                "description": "Bypasses the end-of-match stats reporting routine in idSaveGame when exiting a SnapMap, preventing a NULL pointer dereference."
+            },
+            {
+                "name": "SnapMap PostMatch Profile Alternate Stats Skip",
+                "offset": 0x1A73B99,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1f"),
+                "description": "Bypasses the alternate stats reporting path in idProfileMgr, ensuring clean map unload."
             }
         ]
     },
@@ -602,6 +623,27 @@ TARGETS = [
                 "original": bytes.fromhex("0f 85 c3 01 00 00"),
                 "patched":  bytes.fromhex("90 90 90 90 90 90"),
                 "description": "Disables the isDamaged conditional jump in idModelManager::GetLocalSavedMapEdit, allowing maps to be edited even if flagged damaged."
+            },
+            {
+                "name": "SnapMap PostMatch Profile Stats Skip (Fix 99% Hang On Map Exit)",
+                "offset": 0x1A5B289,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1d"),
+                "description": "Bypasses the end-of-match stats reporting routine in idProfileMgr::Pump when exiting a SnapMap. In offline/LAN mode, Bethesda Hydra stats endpoints do not exist, causing [rbx + 0x160] to be NULL and triggering an Access Violation (0xC0000005) inside idSharedPtr::operator= (0x1418B94B2) that freezes map unload at 99%."
+            },
+            {
+                "name": "SnapMap PostMatch SaveGame Stats Skip (Fix SaveGame Map Exit Hang)",
+                "offset": 0x15AA49E,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1c"),
+                "description": "Bypasses the end-of-match stats reporting routine in idSaveGame when exiting a SnapMap, preventing a NULL pointer dereference."
+            },
+            {
+                "name": "SnapMap PostMatch Profile Alternate Stats Skip",
+                "offset": 0x1A5AC59,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1f"),
+                "description": "Bypasses the alternate stats reporting path in idProfileMgr, ensuring clean map unload."
             }
         ]
     }
@@ -705,6 +747,10 @@ def deploy_offline_broadcasts(game_dir):
 
 def main():
     game_dir = os.getcwd()
+    if len(sys.argv) > 1 and not sys.argv[1].startswith("--"):
+        game_dir = sys.argv[1]
+    elif not os.path.exists(os.path.join(game_dir, "DOOMx64.exe")) and os.path.exists(r"D:\Jogos\steam\steamapps\common\DOOM\DOOMx64.exe"):
+        game_dir = r"D:\Jogos\steam\steamapps\common\DOOM"
     print(f"[*] Game Directory: {game_dir}")
 
     is_restore = len(sys.argv) > 1 and sys.argv[1] == "--restore"
