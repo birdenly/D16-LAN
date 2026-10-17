@@ -45,4 +45,29 @@ By default, Private Matches disabled all XP and stat gains (`metrics_allowStatsA
 
 These defaults and checks were patched in the executable so kills, medals, challenges, post-match XP summaries, in-game taunts (`allowTaunts`), and level-ups are earned in Private Matches and saved directly to your local profile (`profile.bin`). You can also customize `XP_MULTIPLIER` inside `Start_game.bat` (`+metrics_xpMultiplier`) to adjust your progression speed.
 
+### 6. SnapMap P2P & Online Emulation
+Entering SnapMap previously attempted to query Bethesda's Hydra cloud services, throwing notice dialogs (`There was an error connecting to Doom Online Services. Please try again. [RETRY] [STAY OFFLINE]`) and dropping the player into a restricted solo offline mode. In solo offline mode, selecting maps launched directly into singleplayer offline play without creating a multiplayer lobby. Furthermore, when entering with online tabs, the game asked for a Bethesda DOOM ID account (`#str_dlg_snapmap_doom_id_notice`, dialog `0x73`) and failed on username registration with *"Network request failed"*.
+
+The executables are patched to:
+- Bypass the Hydra query error when entering SnapMap (`idMenuManager_Shell::LaunchSnapmaps`), launching directly into the Hub.
+- Force master online status across the engine (`idLocalUser::IsOnline` and `idHydraManager::IsConnected`), making all 70+ online checks in SnapMap recognize the player as online.
+- Force `idLocalUser::SignInStatus` to return `0x16` (`USER_ONLINE_AND_AUTHENTICATED`), satisfying all login status checks in `LaunchSnapmaps` and `SnapmapHub`.
+- Set `SnapmapHub::IsOnline` to true and rewire the `GoOnline` action to immediately mark `m_isOnline = 1` and refresh the hub locally, bypassing defunct cloud authentication.
+- Silence the DOOM ID registration prompt (`#str_dlg_snapmap_doom_id_notice`, dialog `0x73`), completely bypassing the account creation screen.
+- Silence background query failure dialogs (`SnapmapHub::OnError`, `SnapBrowserHelper::OnError`, `SnapmapMapInfo::OnError`, and `SnapBrowserHelper::OnMapDownloadError`), suppressing dialog `0x6C` and dialog `0xA1` ("Failed to sign into DOOM Services").
+- Silence `idSnapBrowserHelper::HandleNoResults`, preventing the blocking modal notice `NOTICE: No results were found.` (dialog `0x48E`) from interrupting map browsing or downloaded map lists.
+- Load local and downloaded maps (`idLocalSavedMapModel` / `savegame.user/.../SNAPMAPS*`) cleanly under **MY MAPS**.
+- Eliminate the infinite `Loading...` stopwatch spinner on map detail screens (`SnapmapMapInfo::ShowScreen` `SetLoading` silence).
+- Bypass the asynchronous cloud query to offline Bethesda Hydra endpoints in `SnapmapMapInfo::QueryMapDetails`, jumping straight to the success callback to set `m_isMapLoaded = 1` and instantly generate and enable the `PLAY`, `EDIT`, and map action buttons.
+- Eliminate the infinite `Loading...` stopwatch spinner on the main Hub navigation bar (`SnapmapHub::SetLoading` silence).
+- Bypass `#str_snap_server_request_wait` waiting modal in `SnapmapHub::SelectTab`, allowing tabs to load and switch immediately without freezing or locking user clicks.
+- Force all SnapMap menu tabs (`FEATURED`, `PLAY`, `CREATE`, `ME`, `FIND MATCH`) and top-bar actions (Search, Feed) to remain permanently enabled and interactive (`SnapmapHub::UpdateTabs`).
+- Bypass dead Hydra cloud queries for featured tiles and news feeds in `SnapmapHub::ShowScreen`.
+- Force `RequestTabTiles` to take the engine's built-in offline route, instantly loading menu tiles for all tabs from local `snapmap_offline/broadcasts/` definitions (`DOWNLOADED MAPS`, `MY MAPS`, `CREATE NEW MAP`, `SEARCH`) without querying dead servers or leaving menus blank.
+- Redirect map selection actions (`SnapmapMapInfo` and `SnapBrowserHelper`) from solo offline play into `LaunchSnapMapLobbyForPublishedMap` (SnapMap Multiplayer Game Lobby).
+- Force the SnapMap lobby to create an immediate local P2P listen server lobby (`session->CreateMatchmakingLobby`) instead of searching for cloud matchmaking lobbies.
+- Allow the host to start the SnapMap co-op match with any number of players (`SnapmapLobby MinPlayers Bypass`).
+Connected players can join via Steam invite over LAN and load into co-op SnapMap matches seamlessly over P2P.
 ---
+
+

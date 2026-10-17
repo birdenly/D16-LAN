@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import struct
@@ -105,6 +106,223 @@ TARGETS = [
                 "original": bytes.fromhex("4c 8d 05 c2 8d e9 01"),
                 "patched":  bytes.fromhex("4c 8d 05 8e 25 ea 01"),
                 "description": "Changes the default value of Title Storage CVar 'allowTaunts' from '0' to '1', enabling in-game taunts in offline/LAN mode."
+            },
+            {
+                "name": "LaunchSnapmaps Skip Offline Error (Fix SnapMap Notice Dialog)",
+                "offset": 0xF9FA38,
+                "original": bytes.fromhex("0f 84 a3 00 00 00"),
+                "patched":  bytes.fromhex("e9 a4 00 00 00 90"),
+                "description": "Bypasses the Hydra signed-in check in idMenuManager_Shell::LaunchSnapmaps when IsTitleStorageReady() is true, jumping directly to ShowScreen(snapmaps-hub) and preventing 'There was an error connecting to Doom Online Services'."
+            },
+            {
+                "name": "SnapmapHub OnError Silence (Suppress Hub Background Query Notice)",
+                "offset": 0x1080770,
+                "original": bytes.fromhex("48 89 5c 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapHub::OnError from popping up dialog 0x6c when online featured tiles cannot be fetched."
+            },
+            {
+                "name": "SnapBrowserHelper OnError Silence (Suppress Browser Query Notice)",
+                "offset": 0xFD0020,
+                "original": bytes.fromhex("48 89 5c 24 10"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::OnError from popping up dialog 0x6c when browsing offline maps."
+            },
+            {
+                "name": "SnapmapMapInfo Play Bypass Solo (Route Play to SnapMap Lobby)",
+                "offset": 0x1129CBE,
+                "original": bytes.fromhex("74 1d"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Bypasses the IsHydraSignedIn() branch in SnapmapMapInfo, routing map play actions to LaunchSnapMapLobbyForPublishedMap (Multiplayer Co-op Lobby) instead of LaunchPublishedSnapMapForOfflinePlay (solo offline play)."
+            },
+            {
+                "name": "SnapBrowserHelper Play Bypass Solo (Route Browser Play to SnapMap Lobby)",
+                "offset": 0xFD09A5,
+                "original": bytes.fromhex("74 1c"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Bypasses the IsHydraSignedIn() branch in SnapBrowserHelper::OnLoadForPlayCallback, routing map load actions to LaunchSnapMapLobbyForPublishedMap instead of solo offline play."
+            },
+            {
+                "name": "LaunchSnapMapLobby Force P2P Hosting 1 (Skip Cloud Search Parms)",
+                "offset": 0xF9F6B8,
+                "original": bytes.fromhex("75 16"),
+                "patched":  bytes.fromhex("eb 16"),
+                "description": "Bypasses matchmaking search parameters setup in LaunchSnapMapLobbyForPublishedMap."
+            },
+            {
+                "name": "LaunchSnapMapLobby Force P2P Hosting 2 (Create Local Matchmaking Lobby)",
+                "offset": 0xF9F7D8,
+                "original": bytes.fromhex("75 1e"),
+                "patched":  bytes.fromhex("eb 1e"),
+                "description": "Unconditionally routes LaunchSnapMapLobbyForPublishedMap to session->CreateMatchmakingLobby (snap.host.published), creating an immediate local P2P hosting lobby instead of searching cloud matchmaking."
+            },
+            {
+                "name": "SnapmapLobby MinPlayers Bypass (Allow Solo / Any Player Count to Start)",
+                "offset": 0x108D2D0,
+                "original": bytes.fromhex("75 57"),
+                "patched":  bytes.fromhex("eb 57"),
+                "description": "Bypasses the minimum player requirement check in idMenuScreen_Shell_SnapmapLobby::TryToStartMatch, allowing the host to start the SnapMap co-op match with any number of players."
+            },
+            {
+                "name": "SnapmapHub IsOnline Force True (Enable Full Online Layout & Tabs)",
+                "offset": 0x107D7A0,
+                "original": bytes.fromhex("40 53 48 83 ec 20"),
+                "patched":  bytes.fromhex("b8 01 00 00 00 c3"),
+                "description": "Forces idMenuScreen_Shell_SnapmapHub::IsOnline to return 1 (true). Enables full SnapMap online layout (MY MAPS, BROWSE, CREATE), removes the offline 'GO ONLINE' banner tile, and allows multiplayer lobbies."
+            },
+            {
+                "name": "SnapmapMapInfo OnError Silence (Suppress Dialog 0xA1)",
+                "offset": 0x1129900,
+                "original": bytes.fromhex("48 89 5c 24 20"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapMapInfo::OnError from popping up dialog 0xA1 ('Failed to sign into DOOM Services')."
+            },
+            {
+                "name": "SnapBrowserHelper OnDownloadError Silence (Suppress Dialog 0xA1)",
+                "offset": 0xFCF720,
+                "original": bytes.fromhex("48 89 5c 24 10"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::OnMapDownloadError from popping up dialog 0xA1 ('Failed to sign into DOOM Services')."
+            },
+            {
+                "name": "SnapmapHub DOOM ID Prompt Silence (Suppress Dialog 0x73)",
+                "offset": 0x1081EE0,
+                "original": bytes.fromhex("40 53 48 81 ec"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapHub::ShowScreen from prompting to create a DOOM ID / Bethesda account (dialog 0x73)."
+            },
+            {
+                "name": "SnapBrowserHelper HandleNoResults Silence (Suppress Dialog 0x48E)",
+                "offset": 0xFCF250,
+                "original": bytes.fromhex("48 89 74 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::HandleNoResults from displaying the modal popup 'NOTICE: No results were found.' (dialog 0x48E)."
+            },
+            {
+                "name": "idLocalUser IsOnline Force True (Master Online Status)",
+                "offset": 0x181C920,
+                "original": bytes.fromhex("48 83 ec 28 48 8b 89 60 01 00 00"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
+                "description": "Forces idLocalUser::IsOnline() to return 1 (true) unconditionally across all 70+ callers in the engine, enabling full online access to SnapMap menus, browsers, downloaded maps, and multiplayer features."
+            },
+            {
+                "name": "idHydraManager IsConnected Force True (Hydra Status Bypass)",
+                "offset": 0x18AED00,
+                "original": bytes.fromhex("83 b9 e0 01 00 00 01 0f 94 c0 c3"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
+                "description": "Forces idHydraManager::IsConnected() to return 1 (true), reporting an active cloud service connection to all query managers."
+            },
+            {
+                "name": "idLocalUser SignInStatus Force OK (Authenticated State 0x16)",
+                "offset": 0x181DB60,
+                "original": bytes.fromhex("48 8b c4 55 41 54"),
+                "patched":  bytes.fromhex("b8 16 00 00 00 c3"),
+                "description": "Forces idLocalUser::SignInStatus() to return 0x16 (OK / Online / Authenticated), satisfying all login and sign-in status checks in LaunchSnapmaps and SnapmapHub."
+            },
+            {
+                "name": "SnapmapHub GoOnline Action Instant Online (Bypass Network Auth)",
+                "offset": 0x10816F0,
+                "original": bytes.fromhex("40 53 48 83 ec 20 33 c0 48 8b d9 48"),
+                "patched":  bytes.fromhex("c6 81 50 03 00 00 01 e9 54 11 00 00"),
+                "description": "When clicking 'Go Online', immediately sets internal m_isOnline flag to 1 and triggers an instant Hub UI refresh without attempting network authentication."
+            },
+            {
+                "name": "SnapmapMapInfo SetLoading Silence (Disable Map Info Loading Spinner)",
+                "offset": 0x109139C,
+                "original": bytes.fromhex("b2 01"),
+                "patched":  bytes.fromhex("31 d2"),
+                "description": "Disables the infinite red stopwatch 'Loading...' spinner in idMenuScreen_Shell_SnapmapMapInfo::ShowScreen by passing bLoading=false to SetLoading, preventing the screen from getting stuck in an infinite loading state."
+            },
+            {
+                "name": "SnapmapMapInfo QueryMapDetails Instant Complete (Bypass Cloud Query & Populate Buttons)",
+                "offset": 0x1090870,
+                "original": bytes.fromhex("48 8b c4 56 57"),
+                "patched":  bytes.fromhex("e9 1b 05 00 00"),
+                "description": "Bypasses the asynchronous cloud query to unreachable Bethesda Hydra services in idMenuScreen_Shell_SnapmapMapInfo::QueryMapDetails, jumping immediately to OnSuccessCallback to set m_isMapLoaded = 1 and call PopulateButtons & PopulateUI, instantly displaying PLAY, EDIT, and other action buttons."
+            },
+            {
+                "name": "SnapmapHub ShowModalDialog Silence (Instant Tab Response)",
+                "offset": 0x107D664,
+                "original": bytes.fromhex("e8 07 b6 f2 ff"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Silences the call to ShowModalDialog('#str_snap_server_request_wait') in idMenuScreen_Shell_SnapmapHub::SelectTab, preventing the screen from locking input or showing a waiting modal dialog while tabs are being populated."
+            },
+            {
+                "name": "SnapmapHub SetLoading Silence (Disable Hub Loading Spinner)",
+                "offset": 0x1083570,
+                "original": bytes.fromhex("48 89 6c 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Neutralizes idMenuScreen_Shell_SnapmapHub::SetLoading, immediately returning without playing 'rollOn' on the loading widget and preventing the infinite red stopwatch 'Loading...' spinner on the Hub screen."
+            },
+            {
+                "name": "SnapmapHub All Tabs Force Enabled & Clickable (Full Menu Interaction)",
+                "offset": 0x1083223,
+                "original": bytes.fromhex("41 b0 01"),
+                "patched":  bytes.fromhex("45 31 c0"),
+                "description": "Forces r8b = 0 in idMenuScreen_Shell_SnapmapHub::UpdateTabs, unconditionally clearing the disabled 0x10 bit on all menu tabs (FEATURED, PLAY, CREATE, ME, FIND MATCH) and top-bar icons (Search, Feed), making the entire menu fully interactive and clickable."
+            },
+            {
+                "name": "SnapmapHub ShowScreen Skip Featured Cloud Query (Bypass Dead Hydra Requests)",
+                "offset": 0x10824D7,
+                "original": bytes.fromhex("e8 44 2a 15 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Bypasses asynchronous background query to unreachable Bethesda Hydra endpoints for online featured tiles in idMenuScreen_Shell_SnapmapHub::ShowScreen."
+            },
+            {
+                "name": "SnapmapHub ShowScreen Skip Feed Cloud Query (Bypass Dead Hydra Requests)",
+                "offset": 0x10825A0,
+                "original": bytes.fromhex("e8 1b c8 13 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Bypasses asynchronous background query to unreachable Bethesda Hydra endpoints for feed items in idMenuScreen_Shell_SnapmapHub::ShowScreen."
+            },
+            {
+                "name": "RequestTabTiles Force Offline (Instant Local Tile Population)",
+                "offset": 0x11BEB9C,
+                "original": bytes.fromhex("0f 84 c2 00 00 00"),
+                "patched":  bytes.fromhex("e9 c3 00 00 00 90"),
+                "description": "Forces RequestTabTiles to unconditionally take the offline path (0x1411bf664), instantly loading tab tiles from local snapmap_offline/broadcasts/ JSON files without querying dead Bethesda servers."
+            },
+            {
+                "name": "CheckLocalSavedMapIntegrity Bypass (Clear isDamaged & Force Clean Status)",
+                "offset": 0x15AB54D,
+                "original": bytes.fromhex("84 db 75 04 c6 47 40 01"),
+                "patched":  bytes.fromhex("e9 95 00 00 00 90 90 90"),
+                "description": "Bypasses the integrity and checksum failure branches in ReadGameDetailsAndVerify (leaving isDamaged = 0), allowing game.details to be fully parsed and preventing 'The save file appears to be damaged'."
+            },
+            {
+                "name": "idSaveGame CheckFileIntegrity HMAC Bypass (Accept All User Profiles & Map Signatures)",
+                "offset": 0x190D230,
+                "original": bytes.fromhex("40 55 56 57 41 54 41 55"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90"),
+                "description": "Bypasses the 'CYBERDEMON' HMAC signature check in idSaveGame, accepting savegames, profiles, and downloaded SnapMap files (.verify) regardless of which SteamID or user account originally created them."
+            },
+            {
+                "name": "GetLocalSavedMapEdit Bypass isDamaged Check (Allow Edit on All Maps)",
+                "offset": 0x11CA450,
+                "original": bytes.fromhex("0f 85 c3 01 00 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90 90"),
+                "description": "Disables the isDamaged conditional jump in idModelManager::GetLocalSavedMapEdit, allowing maps to be edited even if flagged damaged."
+            },
+            {
+                "name": "SnapMap PostMatch Profile Stats Skip (Fix 99% Hang On Map Exit)",
+                "offset": 0x1A741C9,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1d"),
+                "description": "Bypasses the end-of-match stats reporting routine in idProfileMgr::Pump when exiting a SnapMap. In offline/LAN mode, Bethesda Hydra stats endpoints do not exist, causing [rbx + 0x160] to be NULL and triggering an Access Violation (0xC0000005) inside idSharedPtr::operator= (0x1418AF782) that freezes map unload at 99%."
+            },
+            {
+                "name": "SnapMap PostMatch SaveGame Stats Skip (Fix SaveGame Map Exit Hang)",
+                "offset": 0x15AB48E,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1c"),
+                "description": "Bypasses the end-of-match stats reporting routine in idSaveGame when exiting a SnapMap, preventing a NULL pointer dereference."
+            },
+            {
+                "name": "SnapMap PostMatch Profile Alternate Stats Skip",
+                "offset": 0x1A73B99,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1f"),
+                "description": "Bypasses the alternate stats reporting path in idProfileMgr, ensuring clean map unload."
             }
         ]
     },
@@ -209,6 +427,223 @@ TARGETS = [
                 "original": bytes.fromhex("4c 8d 05 ea ef e7 01"),
                 "patched":  bytes.fromhex("4c 8d 05 be 87 e8 01"),
                 "description": "Changes the default value of Title Storage CVar 'allowTaunts' from '0' to '1', enabling in-game taunts in offline/LAN mode."
+            },
+            {
+                "name": "LaunchSnapmaps Skip Offline Error (Fix SnapMap Notice Dialog)",
+                "offset": 0xFA0508,
+                "original": bytes.fromhex("0f 84 a3 00 00 00"),
+                "patched":  bytes.fromhex("e9 a4 00 00 00 90"),
+                "description": "Bypasses the Hydra signed-in check in idMenuManager_Shell::LaunchSnapmaps when IsTitleStorageReady() is true, jumping directly to ShowScreen(snapmaps-hub) and preventing 'There was an error connecting to Doom Online Services'."
+            },
+            {
+                "name": "SnapmapHub OnError Silence (Suppress Hub Background Query Notice)",
+                "offset": 0x1081300,
+                "original": bytes.fromhex("48 89 5c 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapHub::OnError from popping up dialog 0x6c when online featured tiles cannot be fetched."
+            },
+            {
+                "name": "SnapBrowserHelper OnError Silence (Suppress Browser Query Notice)",
+                "offset": 0xFD0B30,
+                "original": bytes.fromhex("48 89 5c 24 10"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::OnError from popping up dialog 0x6c when browsing offline maps."
+            },
+            {
+                "name": "SnapmapMapInfo Play Bypass Solo (Route Play to SnapMap Lobby)",
+                "offset": 0x112AB0E,
+                "original": bytes.fromhex("74 1d"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Bypasses the IsHydraSignedIn() branch in SnapmapMapInfo, routing map play actions to LaunchSnapMapLobbyForPublishedMap (Multiplayer Co-op Lobby) instead of LaunchPublishedSnapMapForOfflinePlay (solo offline play)."
+            },
+            {
+                "name": "SnapBrowserHelper Play Bypass Solo (Route Browser Play to SnapMap Lobby)",
+                "offset": 0xFD14B5,
+                "original": bytes.fromhex("74 1c"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Bypasses the IsHydraSignedIn() branch in SnapBrowserHelper::OnLoadForPlayCallback, routing map load actions to LaunchSnapMapLobbyForPublishedMap instead of solo offline play."
+            },
+            {
+                "name": "LaunchSnapMapLobby Force P2P Hosting 1 (Skip Cloud Search Parms)",
+                "offset": 0xFA0188,
+                "original": bytes.fromhex("75 16"),
+                "patched":  bytes.fromhex("eb 16"),
+                "description": "Bypasses matchmaking search parameters setup in LaunchSnapMapLobbyForPublishedMap."
+            },
+            {
+                "name": "LaunchSnapMapLobby Force P2P Hosting 2 (Create Local Matchmaking Lobby)",
+                "offset": 0xFA02A8,
+                "original": bytes.fromhex("75 1e"),
+                "patched":  bytes.fromhex("eb 1e"),
+                "description": "Unconditionally routes LaunchSnapMapLobbyForPublishedMap to session->CreateMatchmakingLobby (snap.host.published), creating an immediate local P2P hosting lobby instead of searching cloud matchmaking."
+            },
+            {
+                "name": "SnapmapLobby MinPlayers Bypass (Allow Solo / Any Player Count to Start)",
+                "offset": 0x108E180,
+                "original": bytes.fromhex("75 57"),
+                "patched":  bytes.fromhex("eb 57"),
+                "description": "Bypasses the minimum player requirement check in idMenuScreen_Shell_SnapmapLobby::TryToStartMatch, allowing the host to start the SnapMap co-op match with any number of players."
+            },
+            {
+                "name": "SnapmapHub IsOnline Force True (Enable Full Online Layout & Tabs)",
+                "offset": 0x107E330,
+                "original": bytes.fromhex("40 53 48 83 ec 20"),
+                "patched":  bytes.fromhex("b8 01 00 00 00 c3"),
+                "description": "Forces idMenuScreen_Shell_SnapmapHub::IsOnline to return 1 (true). Enables full SnapMap online layout (MY MAPS, BROWSE, CREATE), removes the offline 'GO ONLINE' banner tile, and allows multiplayer lobbies."
+            },
+            {
+                "name": "SnapmapMapInfo OnError Silence (Suppress Dialog 0xA1)",
+                "offset": 0x112A750,
+                "original": bytes.fromhex("48 89 5c 24 20"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapMapInfo::OnError from popping up dialog 0xA1 ('Failed to sign into DOOM Services')."
+            },
+            {
+                "name": "SnapBrowserHelper OnDownloadError Silence (Suppress Dialog 0xA1)",
+                "offset": 0xFD0230,
+                "original": bytes.fromhex("48 89 5c 24 10"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::OnMapDownloadError from popping up dialog 0xA1 ('Failed to sign into DOOM Services')."
+            },
+            {
+                "name": "SnapmapHub DOOM ID Prompt Silence (Suppress Dialog 0x73)",
+                "offset": 0x1082A70,
+                "original": bytes.fromhex("40 53 48 81 ec"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapHub::ShowScreen from prompting to create a DOOM ID / Bethesda account (dialog 0x73)."
+            },
+            {
+                "name": "SnapBrowserHelper HandleNoResults Silence (Suppress Dialog 0x48E)",
+                "offset": 0xFCFD60,
+                "original": bytes.fromhex("48 89 74 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Prevents idSnapBrowserHelper::HandleNoResults from displaying the modal popup 'NOTICE: No results were found.' (dialog 0x48E)."
+            },
+            {
+                "name": "idLocalUser IsOnline Force True (Master Online Status)",
+                "offset": 0x181BB50,
+                "original": bytes.fromhex("48 83 ec 28 48 8b 89 60 01 00 00"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
+                "description": "Forces idLocalUser::IsOnline() to return 1 (true) unconditionally across all 70+ callers in the engine, enabling full online access to SnapMap menus, browsers, downloaded maps, and multiplayer features."
+            },
+            {
+                "name": "idHydraManager IsConnected Force True (Hydra Status Bypass)",
+                "offset": 0x18B8A30,
+                "original": bytes.fromhex("83 b9 e0 01 00 00 01 0f 94 c0 c3"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
+                "description": "Forces idHydraManager::IsConnected() to return 1 (true), reporting an active cloud service connection to all query managers."
+            },
+            {
+                "name": "idLocalUser SignInStatus Force OK (Authenticated State 0x16)",
+                "offset": 0x181CB80,
+                "original": bytes.fromhex("48 8b c4 55 41 54"),
+                "patched":  bytes.fromhex("b8 16 00 00 00 c3"),
+                "description": "Forces idLocalUser::SignInStatus() to return 0x16 (OK / Online / Authenticated), satisfying all login and sign-in status checks in LaunchSnapmaps and SnapmapHub."
+            },
+            {
+                "name": "SnapmapHub GoOnline Action Instant Online (Bypass Network Auth)",
+                "offset": 0x1082280,
+                "original": bytes.fromhex("40 53 48 83 ec 20 33 c0 48 8b d9 48"),
+                "patched":  bytes.fromhex("c6 81 50 03 00 00 01 e9 a4 14 00 00"),
+                "description": "When clicking 'Go Online', immediately sets internal m_isOnline flag to 1 and triggers an instant Hub UI refresh without attempting network authentication."
+            },
+            {
+                "name": "SnapmapMapInfo SetLoading Silence (Disable Map Info Loading Spinner)",
+                "offset": 0x109228C,
+                "original": bytes.fromhex("b2 01"),
+                "patched":  bytes.fromhex("31 d2"),
+                "description": "Disables the infinite red stopwatch 'Loading...' spinner in idMenuScreen_Shell_SnapmapMapInfo::ShowScreen by passing bLoading=false to SetLoading, preventing the screen from getting stuck in an infinite loading state."
+            },
+            {
+                "name": "SnapmapMapInfo QueryMapDetails Instant Complete (Bypass Cloud Query & Populate Buttons)",
+                "offset": 0x1091760,
+                "original": bytes.fromhex("48 8b c4 56 57"),
+                "patched":  bytes.fromhex("e9 1b 05 00 00"),
+                "description": "Bypasses the asynchronous cloud query to unreachable Bethesda Hydra services in idMenuScreen_Shell_SnapmapMapInfo::QueryMapDetails, jumping immediately to OnSuccessCallback to set m_isMapLoaded = 1 and call PopulateButtons & PopulateUI, instantly displaying PLAY, EDIT, and other action buttons."
+            },
+            {
+                "name": "SnapmapHub ShowModalDialog Silence (Instant Tab Response)",
+                "offset": 0x107E1F4,
+                "original": bytes.fromhex("e8 47 b5 f2 ff"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Silences the call to ShowModalDialog('#str_snap_server_request_wait') in idMenuScreen_Shell_SnapmapHub::SelectTab, preventing the screen from locking input or showing a waiting modal dialog while tabs are being populated."
+            },
+            {
+                "name": "SnapmapHub SetLoading Silence (Disable Hub Loading Spinner)",
+                "offset": 0x1084450,
+                "original": bytes.fromhex("48 89 6c 24 18"),
+                "patched":  bytes.fromhex("c3 90 90 90 90"),
+                "description": "Neutralizes idMenuScreen_Shell_SnapmapHub::SetLoading, immediately returning without playing 'rollOn' on the loading widget and preventing the infinite red stopwatch 'Loading...' spinner on the Hub screen."
+            },
+            {
+                "name": "SnapmapHub All Tabs Force Enabled & Clickable (Full Menu Interaction)",
+                "offset": 0x1084103,
+                "original": bytes.fromhex("41 b0 01"),
+                "patched":  bytes.fromhex("45 31 c0"),
+                "description": "Forces r8b = 0 in idMenuScreen_Shell_SnapmapHub::UpdateTabs, unconditionally clearing the disabled 0x10 bit on all menu tabs (FEATURED, PLAY, CREATE, ME, FIND MATCH) and top-bar icons (Search, Feed), making the entire menu fully interactive and clickable."
+            },
+            {
+                "name": "SnapmapHub ShowScreen Skip Featured Cloud Query (Bypass Dead Hydra Requests)",
+                "offset": 0x1083067,
+                "original": bytes.fromhex("e8 b4 2b 15 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Bypasses asynchronous background query to unreachable Bethesda Hydra endpoints for online featured tiles in idMenuScreen_Shell_SnapmapHub::ShowScreen."
+            },
+            {
+                "name": "SnapmapHub ShowScreen Skip Feed Cloud Query (Bypass Dead Hydra Requests)",
+                "offset": 0x1083130,
+                "original": bytes.fromhex("e8 bb c8 13 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90"),
+                "description": "Bypasses asynchronous background query to unreachable Bethesda Hydra endpoints for feed items in idMenuScreen_Shell_SnapmapHub::ShowScreen."
+            },
+            {
+                "name": "RequestTabTiles Force Offline (Instant Local Tile Population)",
+                "offset": 0x11BF7CC,
+                "original": bytes.fromhex("0f 84 c2 00 00 00"),
+                "patched":  bytes.fromhex("e9 c3 00 00 00 90"),
+                "description": "Forces RequestTabTiles to unconditionally take the offline path (0x1411c0294), instantly loading tab tiles from local snapmap_offline/broadcasts/ JSON files without querying dead Bethesda servers."
+            },
+            {
+                "name": "CheckLocalSavedMapIntegrity Bypass (Clear isDamaged & Force Clean Status)",
+                "offset": 0x15AA55D,
+                "original": bytes.fromhex("84 db 75 04 c6 47 40 01"),
+                "patched":  bytes.fromhex("e9 95 00 00 00 90 90 90"),
+                "description": "Bypasses the integrity and checksum failure branches in ReadGameDetailsAndVerify (leaving isDamaged = 0), allowing game.details to be fully parsed and preventing 'The save file appears to be damaged'."
+            },
+            {
+                "name": "idSaveGame CheckFileIntegrity HMAC Bypass (Accept All User Profiles & Map Signatures)",
+                "offset": 0x19186B0,
+                "original": bytes.fromhex("40 55 56 57 41 54 41 55"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90"),
+                "description": "Bypasses the 'CYBERDEMON' HMAC signature check in idSaveGame, accepting savegames, profiles, and downloaded SnapMap files (.verify) regardless of which SteamID or user account originally created them."
+            },
+            {
+                "name": "GetLocalSavedMapEdit Bypass isDamaged Check (Allow Edit on All Maps)",
+                "offset": 0x11CB080,
+                "original": bytes.fromhex("0f 85 c3 01 00 00"),
+                "patched":  bytes.fromhex("90 90 90 90 90 90"),
+                "description": "Disables the isDamaged conditional jump in idModelManager::GetLocalSavedMapEdit, allowing maps to be edited even if flagged damaged."
+            },
+            {
+                "name": "SnapMap PostMatch Profile Stats Skip (Fix 99% Hang On Map Exit)",
+                "offset": 0x1A5B289,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1d"),
+                "description": "Bypasses the end-of-match stats reporting routine in idProfileMgr::Pump when exiting a SnapMap. In offline/LAN mode, Bethesda Hydra stats endpoints do not exist, causing [rbx + 0x160] to be NULL and triggering an Access Violation (0xC0000005) inside idSharedPtr::operator= (0x1418B94B2) that freezes map unload at 99%."
+            },
+            {
+                "name": "SnapMap PostMatch SaveGame Stats Skip (Fix SaveGame Map Exit Hang)",
+                "offset": 0x15AA49E,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1c"),
+                "description": "Bypasses the end-of-match stats reporting routine in idSaveGame when exiting a SnapMap, preventing a NULL pointer dereference."
+            },
+            {
+                "name": "SnapMap PostMatch Profile Alternate Stats Skip",
+                "offset": 0x1A5AC59,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 1f"),
+                "description": "Bypasses the alternate stats reporting path in idProfileMgr, ensuring clean map unload."
             }
         ]
     }
@@ -270,8 +705,52 @@ def restore_executable(game_dir, target_info):
     print(f"[+] Restored original {target_info['exe_name']} successfully!")
     return True
 
+def deploy_offline_broadcasts(game_dir):
+    broadcast_dir = os.path.join(game_dir, "base", "snapmap_offline", "broadcasts")
+    try:
+        os.makedirs(broadcast_dir, exist_ok=True)
+        files = {
+            "snapmaps-hub-play.json": [
+                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Browse and play your downloaded maps", "large": True, "ordinal": 0},
+                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Play your locally created maps", "large": True, "ordinal": 1},
+                {"type": "SNAP_HUB_SEARCH", "text": "SEARCH MAPS", "subText": "Search local map database", "large": False, "ordinal": 2}
+            ],
+            "snapmaps-hub-make.json": [
+                {"type": "SNAP_HUB_EDIT_NEW_MAP", "text": "CREATE NEW MAP", "subText": "Start building a new SnapMap", "large": True, "ordinal": 0},
+                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Continue editing your custom maps", "large": True, "ordinal": 1},
+                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "View and edit downloaded maps", "large": False, "ordinal": 2},
+                {"type": "SNAP_HUB_EDIT_TUTORIAL_MAPS", "text": "TUTORIALS", "subText": "Learn the basics of SnapMap creation", "large": False, "ordinal": 3}
+            ],
+            "snapmaps-hub-me.json": [
+                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Your downloaded community maps", "large": True, "ordinal": 0},
+                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Your published and local creations", "large": True, "ordinal": 1},
+                {"type": "SNAP_HUB_EDIT_NEW_MAP", "text": "CREATE NEW MAP", "subText": "Create a new custom map", "large": False, "ordinal": 2}
+            ],
+            "snapmaps-hub-feature.json": [
+                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Access your downloaded maps library", "large": True, "ordinal": 0},
+                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Browse your local creations", "large": True, "ordinal": 1}
+            ],
+            "snapmaps-hub-quick-play.json": [
+                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Quick play downloaded maps", "large": True, "ordinal": 0},
+                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Quick play your local maps", "large": False, "ordinal": 1}
+            ]
+        }
+        for fname, content in files.items():
+            fpath = os.path.join(broadcast_dir, fname)
+            with open(fpath, "w", encoding="utf-8") as f:
+                json.dump(content, f, indent=2)
+        print(f"[+] Deployed {len(files)} offline SnapMap broadcasts to {broadcast_dir}")
+        return True
+    except Exception as e:
+        print(f"[-] Failed to deploy offline broadcasts: {e}")
+        return False
+
 def main():
     game_dir = os.getcwd()
+    if len(sys.argv) > 1 and not sys.argv[1].startswith("--"):
+        game_dir = sys.argv[1]
+    elif not os.path.exists(os.path.join(game_dir, "DOOMx64.exe")) and os.path.exists(r"D:\Jogos\steam\steamapps\common\DOOM\DOOMx64.exe"):
+        game_dir = r"D:\Jogos\steam\steamapps\common\DOOM"
     print(f"[*] Game Directory: {game_dir}")
 
     is_restore = len(sys.argv) > 1 and sys.argv[1] == "--restore"
@@ -284,6 +763,9 @@ def main():
         else:
             if patch_executable(game_dir, target):
                 success_count += 1
+
+    if not is_restore:
+        deploy_offline_broadcasts(game_dir)
 
     action = "Restoration" if is_restore else "Patching"
     print(f"\n[SUMMARY] {action} complete! {success_count}/{len(TARGETS)} targets processed successfully.")
