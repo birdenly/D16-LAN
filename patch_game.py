@@ -1,9 +1,22 @@
 import json
+import logging
 import os
 import shutil
 import struct
 import sys
 
+log_file = os.path.join(os.getcwd(), 'D16-LAN.log')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_file, mode='a'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# All patches were found by AI.
 TARGETS = [
     {
         "exe_name": "DOOMx64.exe",
@@ -649,31 +662,25 @@ TARGETS = [
     }
 ]
 
-def find_game_dir():
-    # If files exist in current directory, use it
-    if os.path.exists("DOOMx64.exe"):
-        return os.getcwd()
-    return os.getcwd()
-
 def backup_file(filepath):
     bak_path = filepath + ".bak"
     if not os.path.exists(bak_path):
-        print(f"[+] Creating backup: {bak_path}")
+        logger.info(f"[+] Creating backup: {bak_path}")
         shutil.copy2(filepath, bak_path)
-        print("[+] Backup created successfully!")
+        logger.info("[+] Backup created successfully!")
     else:
-        print(f"[*] Backup already exists: {bak_path}")
+        logger.warning(f"[*] Backup already exists: {bak_path}")
     return bak_path
 
 def patch_executable(game_dir, target_info):
     exe_path = os.path.join(game_dir, target_info["exe_name"])
     if not os.path.exists(exe_path):
-        print(f"[-] Executable not found: {exe_path}")
+        logger.error(f"[-] Executable not found: {exe_path}")
         return False
 
-    print(f"\n========================================================")
-    print(f" Processing: {target_info['description']} ({target_info['exe_name']})")
-    print(f"========================================================")
+    logger.info(f"\n========================================================")
+    logger.info(f" Processing: {target_info['description']} ({target_info['exe_name']})")
+    logger.info(f"========================================================")
 
     bak_path = backup_file(exe_path)
 
@@ -683,30 +690,23 @@ def patch_executable(game_dir, target_info):
             f.seek(p["offset"])
             current = f.read(len(p["original"]))
             if current == p["patched"]:
-                print(f"[*] {p['name']} is already applied.")
+                logger.info(f"[*] {p['name']} is already applied.")
             elif current == p["original"]:
                 f.seek(p["offset"])
                 f.write(p["patched"])
-                print(f"[+] {p['name']} applied successfully at 0x{p['offset']:X}!")
+                logger.info(f"[+] {p['name']} applied successfully at 0x{p['offset']:X}!")
             else:
-                print(f"[-] Unexpected bytes at 0x{p['offset']:X} ({p['name']}): {current.hex(' ')}")
+                logger.warning(f"[-] Unexpected bytes at 0x{p['offset']:X} ({p['name']}): {current.hex(' ')}")
                 all_ok = False
 
     return all_ok
 
-def restore_executable(game_dir, target_info):
-    exe_path = os.path.join(game_dir, target_info["exe_name"])
-    bak_path = exe_path + ".bak"
-    if not os.path.exists(bak_path):
-        print(f"[-] Backup not found for {target_info['exe_name']}")
-        return False
-    print(f"[*] Restoring {target_info['exe_name']} from backup...")
-    shutil.copy2(bak_path, exe_path)
-    print(f"[+] Restored original {target_info['exe_name']} successfully!")
-    return True
-
 def deploy_offline_broadcasts(game_dir):
     broadcast_dir = os.path.join(game_dir, "base", "snapmap_offline", "broadcasts")
+    if os.path.exists(broadcast_dir):
+        logger.info(f"[*] Offline broadcasts already exists.")
+        return True
+    
     try:
         os.makedirs(broadcast_dir, exist_ok=True)
         files = {
@@ -739,36 +739,28 @@ def deploy_offline_broadcasts(game_dir):
             fpath = os.path.join(broadcast_dir, fname)
             with open(fpath, "w", encoding="utf-8") as f:
                 json.dump(content, f, indent=2)
-        print(f"[+] Deployed {len(files)} offline SnapMap broadcasts to {broadcast_dir}")
+        logger.info(f"[+] Deployed {len(files)} offline SnapMap broadcasts to {broadcast_dir}")
         return True
     except Exception as e:
-        print(f"[-] Failed to deploy offline broadcasts: {e}")
+        logger.error(f"[-] Failed to deploy offline broadcasts: {e}")
         return False
 
 def main():
     game_dir = os.getcwd()
-    if len(sys.argv) > 1 and not sys.argv[1].startswith("--"):
-        game_dir = sys.argv[1]
-    elif not os.path.exists(os.path.join(game_dir, "DOOMx64.exe")) and os.path.exists(r"D:\Jogos\steam\steamapps\common\DOOM\DOOMx64.exe"):
-        game_dir = r"D:\Jogos\steam\steamapps\common\DOOM"
-    print(f"[*] Game Directory: {game_dir}")
-
-    is_restore = len(sys.argv) > 1 and sys.argv[1] == "--restore"
-
+    logger.info(f"[*] Game Directory: {game_dir}")
+    
+    if not os.path.exists(os.path.join(game_dir, "DOOMx64.exe")) and not os.path.exists(os.path.join(game_dir, "DOOMx64vk.exe")):
+        logger.error("[-] DOOM executable not found in the current directory.")
+        return
+    
     success_count = 0
     for target in TARGETS:
-        if is_restore:
-            if restore_executable(game_dir, target):
-                success_count += 1
-        else:
-            if patch_executable(game_dir, target):
-                success_count += 1
+        if patch_executable(game_dir, target):
+            success_count += 1
 
-    if not is_restore:
-        deploy_offline_broadcasts(game_dir)
+    deploy_offline_broadcasts(game_dir)
 
-    action = "Restoration" if is_restore else "Patching"
-    print(f"\n[SUMMARY] {action} complete! {success_count}/{len(TARGETS)} targets processed successfully.")
+    logger.info(f"\n[SUMMARY] Patching complete! {success_count}/{len(TARGETS)} targets processed successfully.")
 
 if __name__ == "__main__":
     main()
