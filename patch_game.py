@@ -212,27 +212,6 @@ TARGETS = [
                 "description": "Prevents idSnapBrowserHelper::HandleNoResults from displaying the modal popup 'NOTICE: No results were found.' (dialog 0x48E)."
             },
             {
-                "name": "idLocalUser IsOnline Force True (Master Online Status)",
-                "offset": 0x181C920,
-                "original": bytes.fromhex("48 83 ec 28 48 8b 89 60 01 00 00"),
-                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
-                "description": "Forces idLocalUser::IsOnline() to return 1 (true) unconditionally across all 70+ callers in the engine, enabling full online access to SnapMap menus, browsers, downloaded maps, and multiplayer features."
-            },
-            {
-                "name": "idHydraManager IsConnected Force True (Hydra Status Bypass)",
-                "offset": 0x18AED00,
-                "original": bytes.fromhex("83 b9 e0 01 00 00 01 0f 94 c0 c3"),
-                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
-                "description": "Forces idHydraManager::IsConnected() to return 1 (true), reporting an active cloud service connection to all query managers."
-            },
-            {
-                "name": "idLocalUser SignInStatus Force OK (Authenticated State 0x16)",
-                "offset": 0x181DB60,
-                "original": bytes.fromhex("48 8b c4 55 41 54"),
-                "patched":  bytes.fromhex("b8 16 00 00 00 c3"),
-                "description": "Forces idLocalUser::SignInStatus() to return 0x16 (OK / Online / Authenticated), satisfying all login and sign-in status checks in LaunchSnapmaps and SnapmapHub."
-            },
-            {
                 "name": "SnapmapHub GoOnline Action Instant Online (Bypass Network Auth)",
                 "offset": 0x10816F0,
                 "original": bytes.fromhex("40 53 48 83 ec 20 33 c0 48 8b d9 48"),
@@ -315,27 +294,6 @@ TARGETS = [
                 "original": bytes.fromhex("0f 85 c3 01 00 00"),
                 "patched":  bytes.fromhex("90 90 90 90 90 90"),
                 "description": "Disables the isDamaged conditional jump in idModelManager::GetLocalSavedMapEdit, allowing maps to be edited even if flagged damaged."
-            },
-            {
-                "name": "SnapMap PostMatch Profile Stats Skip (Fix 99% Hang On Map Exit)",
-                "offset": 0x1A741C9,
-                "original": bytes.fromhex("74 07"),
-                "patched":  bytes.fromhex("eb 1d"),
-                "description": "Bypasses the end-of-match stats reporting routine in idProfileMgr::Pump when exiting a SnapMap. In offline/LAN mode, Bethesda Hydra stats endpoints do not exist, causing [rbx + 0x160] to be NULL and triggering an Access Violation (0xC0000005) inside idSharedPtr::operator= (0x1418AF782) that freezes map unload at 99%."
-            },
-            {
-                "name": "SnapMap PostMatch SaveGame Stats Skip (Fix SaveGame Map Exit Hang)",
-                "offset": 0x15AB48E,
-                "original": bytes.fromhex("74 07"),
-                "patched":  bytes.fromhex("eb 1c"),
-                "description": "Bypasses the end-of-match stats reporting routine in idSaveGame when exiting a SnapMap, preventing a NULL pointer dereference."
-            },
-            {
-                "name": "SnapMap PostMatch Profile Alternate Stats Skip",
-                "offset": 0x1A73B99,
-                "original": bytes.fromhex("74 07"),
-                "patched":  bytes.fromhex("eb 1f"),
-                "description": "Bypasses the alternate stats reporting path in idProfileMgr, ensuring clean map unload."
             }
         ]
     },
@@ -533,27 +491,6 @@ TARGETS = [
                 "description": "Prevents idSnapBrowserHelper::HandleNoResults from displaying the modal popup 'NOTICE: No results were found.' (dialog 0x48E)."
             },
             {
-                "name": "idLocalUser IsOnline Force True (Master Online Status)",
-                "offset": 0x181BB50,
-                "original": bytes.fromhex("48 83 ec 28 48 8b 89 60 01 00 00"),
-                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
-                "description": "Forces idLocalUser::IsOnline() to return 1 (true) unconditionally across all 70+ callers in the engine, enabling full online access to SnapMap menus, browsers, downloaded maps, and multiplayer features."
-            },
-            {
-                "name": "idHydraManager IsConnected Force True (Hydra Status Bypass)",
-                "offset": 0x18B8A30,
-                "original": bytes.fromhex("83 b9 e0 01 00 00 01 0f 94 c0 c3"),
-                "patched":  bytes.fromhex("b0 01 c3 90 90 90 90 90 90 90 90"),
-                "description": "Forces idHydraManager::IsConnected() to return 1 (true), reporting an active cloud service connection to all query managers."
-            },
-            {
-                "name": "idLocalUser SignInStatus Force OK (Authenticated State 0x16)",
-                "offset": 0x181CB80,
-                "original": bytes.fromhex("48 8b c4 55 41 54"),
-                "patched":  bytes.fromhex("b8 16 00 00 00 c3"),
-                "description": "Forces idLocalUser::SignInStatus() to return 0x16 (OK / Online / Authenticated), satisfying all login and sign-in status checks in LaunchSnapmaps and SnapmapHub."
-            },
-            {
                 "name": "SnapmapHub GoOnline Action Instant Online (Bypass Network Auth)",
                 "offset": 0x1082280,
                 "original": bytes.fromhex("40 53 48 83 ec 20 33 c0 48 8b d9 48"),
@@ -636,27 +573,6 @@ TARGETS = [
                 "original": bytes.fromhex("0f 85 c3 01 00 00"),
                 "patched":  bytes.fromhex("90 90 90 90 90 90"),
                 "description": "Disables the isDamaged conditional jump in idModelManager::GetLocalSavedMapEdit, allowing maps to be edited even if flagged damaged."
-            },
-            {
-                "name": "SnapMap PostMatch Profile Stats Skip (Fix 99% Hang On Map Exit)",
-                "offset": 0x1A5B289,
-                "original": bytes.fromhex("74 07"),
-                "patched":  bytes.fromhex("eb 1d"),
-                "description": "Bypasses the end-of-match stats reporting routine in idProfileMgr::Pump when exiting a SnapMap. In offline/LAN mode, Bethesda Hydra stats endpoints do not exist, causing [rbx + 0x160] to be NULL and triggering an Access Violation (0xC0000005) inside idSharedPtr::operator= (0x1418B94B2) that freezes map unload at 99%."
-            },
-            {
-                "name": "SnapMap PostMatch SaveGame Stats Skip (Fix SaveGame Map Exit Hang)",
-                "offset": 0x15AA49E,
-                "original": bytes.fromhex("74 07"),
-                "patched":  bytes.fromhex("eb 1c"),
-                "description": "Bypasses the end-of-match stats reporting routine in idSaveGame when exiting a SnapMap, preventing a NULL pointer dereference."
-            },
-            {
-                "name": "SnapMap PostMatch Profile Alternate Stats Skip",
-                "offset": 0x1A5AC59,
-                "original": bytes.fromhex("74 07"),
-                "patched":  bytes.fromhex("eb 1f"),
-                "description": "Bypasses the alternate stats reporting path in idProfileMgr, ensuring clean map unload."
             }
         ]
     }
@@ -683,6 +599,9 @@ def patch_executable(game_dir, target_info):
     logger.info(f"========================================================")
 
     bak_path = backup_file(exe_path)
+    if os.path.exists(bak_path):
+        logger.info(f"[*] Restoring clean state from {bak_path} before patching...")
+        shutil.copy2(bak_path, exe_path)
 
     all_ok = True
     with open(exe_path, "r+b") as f:
