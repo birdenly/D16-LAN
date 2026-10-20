@@ -1,3 +1,4 @@
+import glob
 import json
 import logging
 import os
@@ -225,13 +226,7 @@ TARGETS = [
                 "patched":  bytes.fromhex("31 d2"),
                 "description": "Disables the infinite red stopwatch 'Loading...' spinner in idMenuScreen_Shell_SnapmapMapInfo::ShowScreen by passing bLoading=false to SetLoading, preventing the screen from getting stuck in an infinite loading state."
             },
-            {
-                "name": "SnapmapMapInfo QueryMapDetails Instant Complete (Bypass Cloud Query & Populate Buttons)",
-                "offset": 0x1090870,
-                "original": bytes.fromhex("48 8b c4 56 57"),
-                "patched":  bytes.fromhex("e9 1b 05 00 00"),
-                "description": "Bypasses the asynchronous cloud query to unreachable Bethesda Hydra services in idMenuScreen_Shell_SnapmapMapInfo::QueryMapDetails, jumping immediately to OnSuccessCallback to set m_isMapLoaded = 1 and call PopulateButtons & PopulateUI, instantly displaying PLAY, EDIT, and other action buttons."
-            },
+
             {
                 "name": "SnapmapHub ShowModalDialog Silence (Instant Tab Response)",
                 "offset": 0x107D664,
@@ -294,6 +289,132 @@ TARGETS = [
                 "original": bytes.fromhex("0f 85 c3 01 00 00"),
                 "patched":  bytes.fromhex("90 90 90 90 90 90"),
                 "description": "Disables the isDamaged conditional jump in idModelManager::GetLocalSavedMapEdit, allowing maps to be edited even if flagged damaged."
+            },
+            {
+                "name": "ShowWaitingOverlay Bypass (Fix SnapMap Back/ESC Menu Lock)",
+                "offset": 0xFA8C70,
+                "original": bytes.fromhex("40 57 48 83 ec 40"),
+                "patched":  bytes.fromhex("c3 90 90 90 90 90"),
+                "description": "Neutralizes idMenuManager_Shell::ShowWaitingOverlay. Prevents the modal waiting overlay from remaining active offline and locking the ESC / Back button in SnapMap menus."
+            },
+            {
+                "name": "GetCloudClient Force NULL (Enable Local Disk SnapMap Storage)",
+                "offset": 0x11DC500,
+                "original": bytes.fromhex("40 53 48 83 ec 20"),
+                "patched":  bytes.fromhex("31 c0 c3 90 90 90"),
+                "description": "Forces GetCloudClientForPrimaryUser to return NULL (0), causing LoadLocalStorageMaps to bypass dead Bethesda Hydra cloud queries and load all SNAPMAPS* files directly from the local savegame directory."
+            },
+            {
+                "name": "SnapmapMapInfo Allow Back When Unloaded",
+                "offset": 0x108FC5E,
+                "original": bytes.fromhex("74 65"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Prevents SnapmapMapInfo from dropping user input and blocking ESC / Back button when map details are not loaded."
+            },
+            {
+                "name": "SnapmapMapInfo Allow Back When Busy",
+                "offset": 0x108FC8E,
+                "original": bytes.fromhex("7f e5"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Prevents SnapmapMapInfo from dropping user input and blocking ESC / Back button when pending operations exist."
+            },
+            {
+                "name": "LaunchLocalSnapMap Clear Offline Flag (Enable Multiplayer Match)",
+                "offset": 0xF9EAC7,
+                "original": bytes.fromhex("66 83 f2 08"),
+                "patched":  bytes.fromhex("66 83 e2 f7"),
+                "description": "Clears the MATCH_FLAG_OFFLINE (0x08) bit in matchParameters when launching local maps, allowing them to host as LAN multiplayer."
+            },
+            {
+                "name": "SnapmapBrowser Allow Back When Unloaded",
+                "offset": 0x1083516,
+                "original": bytes.fromhex("74 34"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapBrowser from dropping user input and blocking ESC / Back button when unloaded or no results."
+            },
+            {
+                "name": "SnapBrowserHelper Allow Back In All Browser Screens (Fix Back/ESC Lock)",
+                "offset": 0xFCED4C,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 10"),
+                "description": "Bypasses the m_isBusy / request count gate in idSnapBrowserHelper::HandleAction, allowing the Back / ESC action to immediately cancel pending operations, pop the screen, and return to the parent menu."
+            },
+            {
+                "name": "LaunchSnapMapLobby Bypass Online Check (Dialog 0x5B Fix)",
+                "offset": 0xF9F381,
+                "original": bytes.fromhex("75 62"),
+                "patched":  bytes.fromhex("eb 62"),
+                "description": "Bypasses the IsOnline() check in idMenuManager_Shell::LaunchSnapMapLobbyForPublishedMap, preventing dialog 0x5B ('You must be online to play SnapMap with others') and allowing local P2P matchmaking lobby creation offline."
+            },
+            {
+                "name": "SnapmapHub ShowScreen Offline Bypass (Unlock FEATURED Screen)",
+                "offset": 0x1082175,
+                "original": bytes.fromhex("0f 84 ed 00 00 00"),
+                "patched":  bytes.fromhex("eb 34 90 90 90 90"),
+                "description": "Bypasses the IsOnline() check in idMenuScreen_Shell_SnapmapHub::ShowScreen, allowing the Featured tab to populate its category tiles from local offline broadcasts without an active connection."
+            },
+            {
+                "name": "LaunchLocalSnapMap Force Co-op Lobby Mode (SetLobbyMode 1)",
+                "offset": 0xF9EAD2,
+                "original": bytes.fromhex("33 d2"),
+                "patched":  bytes.fromhex("b2 01"),
+                "description": "In LaunchLocalSnapMap, changes SetLobbyMode(0) to SetLobbyMode(1), enabling full multiplayer co-op lobby mode with 4 player slots and LAN invites instead of solo offline play."
+            },
+            {
+                "name": "PumpPrivilegeChecks Bypass (Fix Signing into DOOM Services Loop & Launch SnapMap)",
+                "offset": 0xFA42B4,
+                "original": bytes.fromhex("48 8b 0d dd 51 70 03"),
+                "patched":  bytes.fromhex("e9 7e 03 00 00 90 90"),
+                "description": "Bypasses online Bethesda Hydra privilege check in idMenuManager_Shell::PumpPrivilegeChecks, routing directly to LaunchSnapmaps (0x140FA5037). Prevents the infinite modal loop 'AVISO: Entrando nos serviços de DOOM.' (dialog 0x97 / #str_online_hydra_signing_in) and allows both Host and Player 2 to launch and join SnapMap immediately."
+            },
+            {
+                "name": "State_Game_Lobby_Host Keep Peers (Prevent Disconnect on Match Start)",
+                "offset": 0x1986EFC,
+                "original": bytes.fromhex("74 29"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Disables 'DisconnectAllPeers for Dedicated lobby before start' in idSessionLocal::State_Game_Lobby_Host. When starting the match from a SnapMap lobby, preserves all connected LAN peers (Player 2) and sends the game start packet instead of kicking them back to the main menu."
+            },
+            {
+                "name": "net_peerTimeoutDuringLoadMS 60s (Extend Peer Load Timeout for Co-op)",
+                "offset": 0x201B948,
+                "original": bytes.fromhex("31 30 30 30 30"),
+                "patched":  bytes.fromhex("36 30 30 30 30"),
+                "description": "Extends default peer timeout during map loading from 10 seconds to 60 seconds, preventing split-screen / simultaneous local instance loading lag from timing out peers."
+            },
+            {
+                "name": "CheckHeartbeats Bypass Timeout Disconnect (Prevent Peer & Host Loading Drop)",
+                "offset": 0x17FBF42,
+                "original": bytes.fromhex("0f 8e fe 05 00 00"),
+                "patched":  bytes.fromhex("e9 ff 05 00 00 90"),
+                "description": "Bypasses the heartbeat timeout disconnect checks in idSessionLocal::CheckHeartbeats. Unconditionally skips both the host-dropping-peer and client-dropping-host disconnect routines, allowing peers to wait indefinitely for the host to complete heavy map loading without getting kicked at 99%."
+            },
+            {
+                "name": "MapFinishedLoading Bypass Peer Load Timeout (Infinite Peer Wait)",
+                "offset": 0x1587A96,
+                "original": bytes.fromhex("7e 05"),
+                "patched":  bytes.fromhex("eb 05"),
+                "description": "Bypasses the 10-second peer loading timeout (net_waitOnPeerToLoadTimer_Seconds) in MapFinishedLoading. Converts conditional jump (jle) to unconditional jump (jmp), ensuring the host waits indefinitely until all connected co-op peers finish map loading before launching in-game."
+            },
+            {
+                "name": "SnapshotDeltaListFull Bypass (Prevent Out-Of-Game Client Drop During Load)",
+                "offset": 0x19807D4,
+                "original": bytes.fromhex("0f 84 91 00 00 00"),
+                "patched":  bytes.fromhex("e9 92 00 00 00 90"),
+                "description": "Bypasses the delta list overflow drop routine in the snapshot builder. Prevents the host from kicking out-of-game peers at 99% loading with 'Disconnecting out-of-game client instead of sending snapshot delta because his delta list is full'."
+            },
+            {
+                "name": "ReliableQueueOverflow Bypass (Prevent Peer Drop on Message Queue Congestion)",
+                "offset": 0x1809872,
+                "original": bytes.fromhex("0f 85 78 04 00 00"),
+                "patched":  bytes.fromhex("e9 79 04 00 00 90"),
+                "description": "Bypasses the reliable message queue overflow drop routine in QueueReliableMessage, preventing peer disconnects when network message queues congest during heavy map loading."
+            },
+            {
+                "name": "PostMatchReturnToLobby Validation Bypass (Ensure Clean Return to Lobby)",
+                "offset": 0xFA06E0,
+                "original": bytes.fromhex("40 53 48 83 ec 20"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90"),
+                "description": "Forces lobby player count validation to always return 1 (true) in idMenuManager_Shell::State_Transition_Game_Lobby, ensuring both players return safely to the SnapMap lobby (SALA DE PARTIDA) at the end of a match without dialog 0xD5."
             }
         ]
     },
@@ -504,13 +625,7 @@ TARGETS = [
                 "patched":  bytes.fromhex("31 d2"),
                 "description": "Disables the infinite red stopwatch 'Loading...' spinner in idMenuScreen_Shell_SnapmapMapInfo::ShowScreen by passing bLoading=false to SetLoading, preventing the screen from getting stuck in an infinite loading state."
             },
-            {
-                "name": "SnapmapMapInfo QueryMapDetails Instant Complete (Bypass Cloud Query & Populate Buttons)",
-                "offset": 0x1091760,
-                "original": bytes.fromhex("48 8b c4 56 57"),
-                "patched":  bytes.fromhex("e9 1b 05 00 00"),
-                "description": "Bypasses the asynchronous cloud query to unreachable Bethesda Hydra services in idMenuScreen_Shell_SnapmapMapInfo::QueryMapDetails, jumping immediately to OnSuccessCallback to set m_isMapLoaded = 1 and call PopulateButtons & PopulateUI, instantly displaying PLAY, EDIT, and other action buttons."
-            },
+
             {
                 "name": "SnapmapHub ShowModalDialog Silence (Instant Tab Response)",
                 "offset": 0x107E1F4,
@@ -573,6 +688,132 @@ TARGETS = [
                 "original": bytes.fromhex("0f 85 c3 01 00 00"),
                 "patched":  bytes.fromhex("90 90 90 90 90 90"),
                 "description": "Disables the isDamaged conditional jump in idModelManager::GetLocalSavedMapEdit, allowing maps to be edited even if flagged damaged."
+            },
+            {
+                "name": "ShowWaitingOverlay Bypass (Fix SnapMap Back/ESC Menu Lock)",
+                "offset": 0xFA9740,
+                "original": bytes.fromhex("40 57 48 83 ec 40"),
+                "patched":  bytes.fromhex("c3 90 90 90 90 90"),
+                "description": "Neutralizes idMenuManager_Shell::ShowWaitingOverlay. Prevents the modal waiting overlay from remaining active offline and locking the ESC / Back button in SnapMap menus."
+            },
+            {
+                "name": "GetCloudClient Force NULL (Enable Local Disk SnapMap Storage)",
+                "offset": 0x11DD1D0,
+                "original": bytes.fromhex("40 53 48 83 ec 20"),
+                "patched":  bytes.fromhex("31 c0 c3 90 90 90"),
+                "description": "Forces GetCloudClientForPrimaryUser to return NULL (0), causing LoadLocalStorageMaps to bypass dead Bethesda Hydra cloud queries and load all SNAPMAPS* files directly from the local savegame directory."
+            },
+            {
+                "name": "SnapmapMapInfo Allow Back When Unloaded",
+                "offset": 0x1090B4E,
+                "original": bytes.fromhex("74 65"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Prevents SnapmapMapInfo from dropping user input and blocking ESC / Back button when map details are not loaded."
+            },
+            {
+                "name": "SnapmapMapInfo Allow Back When Busy",
+                "offset": 0x1090B7E,
+                "original": bytes.fromhex("7f e5"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Prevents SnapmapMapInfo from dropping user input and blocking ESC / Back button when pending operations exist."
+            },
+            {
+                "name": "LaunchLocalSnapMap Clear Offline Flag (Enable Multiplayer Match)",
+                "offset": 0xF9F597,
+                "original": bytes.fromhex("66 83 f2 08"),
+                "patched":  bytes.fromhex("66 83 e2 f7"),
+                "description": "Clears the MATCH_FLAG_OFFLINE (0x08) bit in matchParameters when launching local maps, allowing them to host as LAN multiplayer."
+            },
+            {
+                "name": "SnapmapBrowser Allow Back When Unloaded",
+                "offset": 0x10843F6,
+                "original": bytes.fromhex("74 34"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Prevents idMenuScreen_Shell_SnapmapBrowser from dropping user input and blocking ESC / Back button when unloaded or no results."
+            },
+            {
+                "name": "SnapBrowserHelper Allow Back In All Browser Screens (Fix Back/ESC Lock)",
+                "offset": 0xFCF85C,
+                "original": bytes.fromhex("74 07"),
+                "patched":  bytes.fromhex("eb 10"),
+                "description": "Bypasses the m_isBusy / request count gate in idSnapBrowserHelper::HandleAction, allowing the Back / ESC action to immediately cancel pending operations, pop the screen, and return to the parent menu."
+            },
+            {
+                "name": "LaunchSnapMapLobby Bypass Online Check (Dialog 0x5B Fix)",
+                "offset": 0xF9FE51,
+                "original": bytes.fromhex("75 62"),
+                "patched":  bytes.fromhex("eb 62"),
+                "description": "Bypasses the IsOnline() check in idMenuManager_Shell::LaunchSnapMapLobbyForPublishedMap, preventing dialog 0x5B ('You must be online to play SnapMap with others') and allowing local P2P matchmaking lobby creation offline."
+            },
+            {
+                "name": "SnapmapHub ShowScreen Offline Bypass (Unlock FEATURED Screen)",
+                "offset": 0x1082D05,
+                "original": bytes.fromhex("0f 84 ed 00 00 00"),
+                "patched":  bytes.fromhex("eb 34 90 90 90 90"),
+                "description": "Bypasses the IsOnline() check in idMenuScreen_Shell_SnapmapHub::ShowScreen, allowing the Featured tab to populate its category tiles from local offline broadcasts without an active connection."
+            },
+            {
+                "name": "LaunchLocalSnapMap Force Co-op Lobby Mode (SetLobbyMode 1)",
+                "offset": 0xF9F5A2,
+                "original": bytes.fromhex("33 d2"),
+                "patched":  bytes.fromhex("b2 01"),
+                "description": "In LaunchLocalSnapMap, changes SetLobbyMode(0) to SetLobbyMode(1), enabling full multiplayer co-op lobby mode with 4 player slots and LAN invites instead of solo offline play."
+            },
+            {
+                "name": "PumpPrivilegeChecks Bypass (Fix Signing into DOOM Services Loop & Launch SnapMap)",
+                "offset": 0xFA4D84,
+                "original": bytes.fromhex("48 8b 0d 45 f1 df 04"),
+                "patched":  bytes.fromhex("e9 7e 03 00 00 90 90"),
+                "description": "Bypasses online Bethesda Hydra privilege check in idMenuManager_Shell::PumpPrivilegeChecks, routing directly to LaunchSnapmaps (0x140FA5B07). Prevents the infinite modal loop 'AVISO: Entrando nos serviços de DOOM.' (dialog 0x97 / #str_online_hydra_signing_in) and allows both Host and Player 2 to launch and join SnapMap immediately."
+            },
+            {
+                "name": "State_Game_Lobby_Host Keep Peers (Prevent Disconnect on Match Start)",
+                "offset": 0x19926AC,
+                "original": bytes.fromhex("74 29"),
+                "patched":  bytes.fromhex("90 90"),
+                "description": "Disables 'DisconnectAllPeers for Dedicated lobby before start' in idSessionLocal::State_Game_Lobby_Host. When starting the match from a SnapMap lobby, preserves all connected LAN peers (Player 2) and sends the game start packet instead of kicking them back to the main menu."
+            },
+            {
+                "name": "net_peerTimeoutDuringLoadMS 60s (Extend Peer Load Timeout for Co-op)",
+                "offset": 0x2002378,
+                "original": bytes.fromhex("31 30 30 30 30"),
+                "patched":  bytes.fromhex("36 30 30 30 30"),
+                "description": "Extends default peer timeout during map loading from 10 seconds to 60 seconds, preventing split-screen / simultaneous local instance loading lag from timing out peers."
+            },
+            {
+                "name": "CheckHeartbeats Bypass Timeout Disconnect (Prevent Peer & Host Loading Drop)",
+                "offset": 0x17FB342,
+                "original": bytes.fromhex("0f 8e fe 05 00 00"),
+                "patched":  bytes.fromhex("e9 ff 05 00 00 90"),
+                "description": "Bypasses the heartbeat timeout disconnect checks in idSessionLocal::CheckHeartbeats. Unconditionally skips both the host-dropping-peer and client-dropping-host disconnect routines, allowing peers to wait indefinitely for the host to complete heavy map loading without getting kicked at 99%."
+            },
+            {
+                "name": "MapFinishedLoading Bypass Peer Load Timeout (Infinite Peer Wait)",
+                "offset": 0x1586A06,
+                "original": bytes.fromhex("7e 05"),
+                "patched":  bytes.fromhex("eb 05"),
+                "description": "Bypasses the 10-second peer loading timeout (net_waitOnPeerToLoadTimer_Seconds) in MapFinishedLoading (Vulkan). Converts conditional jump (jle) to unconditional jump (jmp), ensuring the host waits indefinitely until all connected co-op peers finish map loading before launching in-game."
+            },
+            {
+                "name": "SnapshotDeltaListFull Bypass (Prevent Out-Of-Game Client Drop During Load)",
+                "offset": 0x198BF84,
+                "original": bytes.fromhex("0f 84 91 00 00 00"),
+                "patched":  bytes.fromhex("e9 92 00 00 00 90"),
+                "description": "Bypasses the delta list overflow drop routine in the snapshot builder. Prevents the host from kicking out-of-game peers at 99% loading with 'Disconnecting out-of-game client instead of sending snapshot delta because his delta list is full'."
+            },
+            {
+                "name": "ReliableQueueOverflow Bypass (Prevent Peer Drop on Message Queue Congestion)",
+                "offset": 0x1808BE2,
+                "original": bytes.fromhex("0f 85 78 04 00 00"),
+                "patched":  bytes.fromhex("e9 79 04 00 00 90"),
+                "description": "Bypasses the reliable message queue overflow drop routine in QueueReliableMessage, preventing peer disconnects when network message queues congest during heavy map loading."
+            },
+            {
+                "name": "PostMatchReturnToLobby Validation Bypass (Ensure Clean Return to Lobby)",
+                "offset": 0xFA11B0,
+                "original": bytes.fromhex("40 53 48 83 ec 20"),
+                "patched":  bytes.fromhex("b0 01 c3 90 90 90"),
+                "description": "Forces lobby player count validation to always return 1 (true) in idMenuManager_Shell::State_Transition_Game_Lobby, ensuring both players return safely to the SnapMap lobby (SALA DE PARTIDA) at the end of a match without dialog 0xD5."
             }
         ]
     }
@@ -620,49 +861,6 @@ def patch_executable(game_dir, target_info):
 
     return all_ok
 
-def deploy_offline_broadcasts(game_dir):
-    broadcast_dir = os.path.join(game_dir, "base", "snapmap_offline", "broadcasts")
-    if os.path.exists(broadcast_dir):
-        logger.info(f"[*] Offline broadcasts already exists.")
-        return True
-    
-    try:
-        os.makedirs(broadcast_dir, exist_ok=True)
-        files = {
-            "snapmaps-hub-play.json": [
-                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Browse and play your downloaded maps", "large": True, "ordinal": 0},
-                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Play your locally created maps", "large": True, "ordinal": 1},
-                {"type": "SNAP_HUB_SEARCH", "text": "SEARCH MAPS", "subText": "Search local map database", "large": False, "ordinal": 2}
-            ],
-            "snapmaps-hub-make.json": [
-                {"type": "SNAP_HUB_EDIT_NEW_MAP", "text": "CREATE NEW MAP", "subText": "Start building a new SnapMap", "large": True, "ordinal": 0},
-                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Continue editing your custom maps", "large": True, "ordinal": 1},
-                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "View and edit downloaded maps", "large": False, "ordinal": 2},
-                {"type": "SNAP_HUB_EDIT_TUTORIAL_MAPS", "text": "TUTORIALS", "subText": "Learn the basics of SnapMap creation", "large": False, "ordinal": 3}
-            ],
-            "snapmaps-hub-me.json": [
-                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Your downloaded community maps", "large": True, "ordinal": 0},
-                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Your published and local creations", "large": True, "ordinal": 1},
-                {"type": "SNAP_HUB_EDIT_NEW_MAP", "text": "CREATE NEW MAP", "subText": "Create a new custom map", "large": False, "ordinal": 2}
-            ],
-            "snapmaps-hub-feature.json": [
-                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Access your downloaded maps library", "large": True, "ordinal": 0},
-                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Browse your local creations", "large": True, "ordinal": 1}
-            ],
-            "snapmaps-hub-quick-play.json": [
-                {"type": "SNAP_HUB_EDIT_DOWNLOADED_MAPS", "text": "DOWNLOADED MAPS", "subText": "Quick play downloaded maps", "large": True, "ordinal": 0},
-                {"type": "SNAP_HUB_EDIT_SAVED_MAPS", "text": "MY MAPS", "subText": "Quick play your local maps", "large": False, "ordinal": 1}
-            ]
-        }
-        for fname, content in files.items():
-            fpath = os.path.join(broadcast_dir, fname)
-            with open(fpath, "w", encoding="utf-8") as f:
-                json.dump(content, f, indent=2)
-        logger.info(f"[+] Deployed {len(files)} offline SnapMap broadcasts to {broadcast_dir}")
-        return True
-    except Exception as e:
-        logger.error(f"[-] Failed to deploy offline broadcasts: {e}")
-        return False
 
 def main():
     game_dir = os.getcwd()
@@ -677,10 +875,7 @@ def main():
         if patch_executable(game_dir, target):
             success_count += 1
 
-    deploy_offline_broadcasts(game_dir)
-
     logger.info(f"\n[SUMMARY] Patching complete! {success_count}/{len(TARGETS)} targets processed successfully.")
 
 if __name__ == "__main__":
     main()
-
